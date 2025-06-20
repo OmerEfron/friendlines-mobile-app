@@ -7,8 +7,8 @@ Each phase ends with a green build you can install on a real device using `expo 
 
 ## Assumptions
 
-- The Expo project is already initialised in `app/` and boots successfully.
-- A Git repository is initialised inside `app/` and current code is committed & pushed.
+- The Expo project is already initialised at the repository root and boots successfully.
+- A Git repository is initialised and current code is committed & pushed.
 - The typed `apiClient` wrapper is fully implemented and points to the backend.
 
 ---

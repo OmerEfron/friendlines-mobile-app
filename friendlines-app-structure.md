@@ -73,19 +73,16 @@ Friendlines is a minimalist social newsfeed that distills your friends' daily up
 npm install --global expo-cli eas-cli
 
 # 2. Clone the repo
-git clone https://github.com/your-org/friendlines.git
-cd friendlines
+git clone https://github.com/OmerEfron/friendlines-mobile-app.git
+cd friendlines-mobile-app
 
-# 3. Navigate to the app directory
-cd app
-
-# 4. Install dependencies
+# 3. Install dependencies
 npm install
 
-# 5. Run the development server
+# 4. Run the development server
 expo start --tunnel
 
-# 6. Build & launch on iOS/Android simulator
+# 5. Build & launch on iOS/Android simulator
 expo run:ios   # or expo run:android
 ```
 
@@ -98,27 +95,29 @@ expo run:ios   # or expo run:android
 The project follows a _feature-first_ layout inside `src/`, keeping screens, related hooks, styles, and tests together.
 
 ```text
-friendlines/
+friendlines-mobile-app/
 ├── friendlines-app-structure.md  # This blueprint document
-└── app/                          # Main application directory
-    │
-    ├── app.config.js             # Dynamic Expo config (reads env vars)
-    ├── .eslintrc.js              # ESLint configuration
-    ├── jest.config.js            # Jest test configuration
-    ├── babel.config.js           # Babel transpilation config
-    ├── metro.config.js           # Metro bundler config
-    ├── eas.json                  # EAS Build & Update configuration
-    ├── README.md                 # Project documentation
-    │
-    ├── .github/workflows/        # CI pipelines (lint, test, EAS build)
-    │   ├── lint-test.yml
-    │   └── eas-build.yml
-    │
-    ├── assets/                   # Images, fonts, lottie files
-    │   ├── fonts/
-    │   └── icons/
-    │
-    └── src/
+├── IMPLEMENTATION_GUIDE.md       # Implementation guide
+├── .cursor/                      # Development tooling and AI rules
+├── app.json                      # Expo configuration
+├── App.tsx                       # Root React Native component
+├── package.json                  # Dependencies and scripts
+├── .eslintrc.js                  # ESLint configuration
+├── eslint.config.js              # ESLint v9+ flat config
+├── jest.config.js                # Jest test configuration
+├── babel.config.js               # Babel transpilation config
+├── metro.config.js               # Metro bundler config
+├── eas.json                      # EAS Build & Update configuration
+├── README.md                     # Project documentation
+├── .prettierrc.js                # Prettier code formatting
+├── .husky/                       # Git hooks configuration
+├── .github/workflows/            # CI pipelines (lint, test, EAS build)
+│   ├── lint-test.yml
+│   └── eas-build.yml
+├── assets/                       # Images, fonts, lottie files
+│   ├── fonts/
+│   └── icons/
+└── src/
         ├── components/           # Pure, reusable UI atoms & molecules
         │   ├── Button/
         │   │   ├── Button.tsx
