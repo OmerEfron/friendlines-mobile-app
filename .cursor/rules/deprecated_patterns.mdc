@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Deprecated Patterns
+
+## Avoid Using
+- Deprecated lifecycle methods in React components.
+- Inline styles directly in JSX.
+
+## Use Instead
+- Use React hooks for managing component state and lifecycle.
+- Utilize styled-components or a similar library for styling.
+
+## Strong Emphasis
+- Ensure all deprecated patterns are clearly marked and provide the correct, up-to-date patterns with clear instructions.

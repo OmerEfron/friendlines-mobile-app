@@ -1,0 +1,22 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# High-Level Overview
+
+## Purpose
+The purpose of these Cursor Rules is to guide the AI in generating code for the Friendlines app, a minimalist social newsfeed application. The app aims to keep users updated on their friends' lives through AI-generated newsflash-style headlines.
+
+## Key Objectives
+- Ensure code consistency and adherence to the app's design principles.
+- Facilitate the creation of modular and reusable components.
+- Support AI-powered headline generation with user control.
+
+## Design Principles
+- Minimalist and readable interface.
+- Fast feedback loops via push notifications.
+- Modular, reusable components.
+
+## Structure
+The rules are organized by category, feature, and functionality to ensure easy navigation and updates.

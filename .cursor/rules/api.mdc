@@ -1,0 +1,377 @@
+---
+description: When you need to preform an api request, use this rule
+globs: 
+alwaysApply: false
+---
+# Friendlines API Client Documentation
+
+## Overview
+The Friendlines API client provides a typed, centralized way to interact with the backend API. It includes automatic error handling, request/response interceptors, and comprehensive TypeScript support.
+
+## Import and Usage
+
+```typescript
+import { apiClient } from '../services/apiClient';
+// or
+import apiClient from '../services/apiClient';
+```
+
+## API Base Configuration
+- **Base URL**: `http://localhost:3000`
+- **Timeout**: 10 seconds
+- **Content-Type**: `application/json`
+
+## Authentication Methods
+
+### Login/Create User
+```typescript
+const result = await apiClient.login({
+  fullName: 'John Doe',
+  email: 'john@example.com'
+});
+// Returns: ApiResponse<User>
+```
+
+### Check User Exists
+```typescript
+const result = await apiClient.checkUserExists('user@example.com');
+// Returns: ApiResponse<{ exists: boolean; email: string }>
+```
+
+## User Management Methods
+
+### Get User Profile
+```typescript
+const profile = await apiClient.getUserProfile('user-id');
+// Returns: ApiResponse<User>
+```
+
+### Get User Followers
+```typescript
+const followers = await apiClient.getFollowers('user-id', 1, 20);
+// Parameters: userId, page (default: 1), limit (default: 20)
+// Returns: ApiResponse<UsersListResponse & { followers: User[]; pagination: {...} }>
+```
+
+### Get Users Following
+```typescript
+const following = await apiClient.getFollowing('user-id', 1, 20);
+// Returns: ApiResponse<UsersListResponse & { following: User[]; pagination: {...} }>
+```
+
+### Toggle Follow/Unfollow
+```typescript
+const result = await apiClient.toggleFollow('target-user-id', 'current-user-id');
+// Returns: ApiResponse<FollowAction>
+// FollowAction: { targetUserId, currentUserId, isFollowing, followersCount, followingCount, action }
+```
+
+### Get Follow Status
+```typescript
+const status = await apiClient.getFollowStatus('target-user-id', 'current-user-id');
+// Returns: ApiResponse<UserFollowStatus>
+// UserFollowStatus: { isFollowing, isFollowedBy, mutualFollow, etc. }
+```
+
+## Posts/Newsflash Methods
+
+### Get All Posts (Feed)
+```typescript
+const feed = await apiClient.getAllPosts(1, 20);
+// Parameters: page (default: 1), limit (default: 20)
+// Returns: ApiResponse<NewsflashFeedResponse>
+// NewsflashFeedResponse: { data: Newsflash[]; pagination: {...} }
+```
+
+### Get User Posts
+```typescript
+const userPosts = await apiClient.getUserPosts('user-id', 1, 20);
+// Returns: ApiResponse<UserPostsResponse>
+// UserPostsResponse: { data: Newsflash[]; user: User; pagination: {...} }
+```
+
+### Create Post
+```typescript
+const newPost = await apiClient.createPost({
+  rawText: 'Just got a new dog! 🐶',
+  userId: 'user-id'
+});
+// Returns: ApiResponse<Newsflash>
+```
+
+### Update Post
+```typescript
+const updatedPost = await apiClient.updatePost('post-id', {
+  rawText: 'Updated text content'
+});
+// Returns: ApiResponse<Newsflash>
+```
+
+### Get Single Post
+```typescript
+const post = await apiClient.getPost('post-id');
+// Returns: ApiResponse<Newsflash>
+```
+
+### Delete Post
+```typescript
+const result = await apiClient.deletePost('post-id');
+// Returns: ApiResponse<{ id: string; deletedAt: string }>
+```
+
+## Like/Reaction Methods
+
+### Toggle Like
+```typescript
+const result = await apiClient.toggleLike('post-id', 'user-id');
+// Returns: ApiResponse<LikeAction>
+// LikeAction: { postId, userId, isLiked, likesCount, action: 'liked' | 'unliked' }
+```
+
+### Get Post Likes
+```typescript
+const likes = await apiClient.getPostLikes('post-id');
+// Returns: ApiResponse<PostLikesResponse>
+// PostLikesResponse: { postId, likesCount, likes: PostLike[] }
+```
+
+## Utility Methods
+
+### Health Check
+```typescript
+const health = await apiClient.healthCheck();
+// Returns: ApiResponse<{ status, environment, timestamp, uptime, version }>
+```
+
+## Type Definitions
+
+### Core Types
+```typescript
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  followersCount: number;
+  followingCount: number;
+}
+
+interface Newsflash {
+  id: string;
+  userId: string;
+  userFullName: string;
+  rawText: string;
+  generatedText: string;
+  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
+  likesCount: number;
+  commentsCount: number;
+  sharesCount: number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+  pagination?: ApiPagination;
+}
+
+interface ApiError {
+  code: number;
+  message: string;
+  errors: string[];
+  timestamp: string;
+}
+```
+
+## Error Handling
+
+### Automatic Error Handling
+The API client automatically handles errors through interceptors:
+- Network errors (code: 0)
+- Server errors (4xx, 5xx status codes)
+- Timeout errors
+- Parsing errors
+
+### Error Service Methods
+```typescript
+import { errorService } from '../services/errorService';
+
+// Check error types
+errorService.isNetworkError(error);     // Network connectivity issues
+errorService.isValidationError(error);  // 400 with validation errors
+errorService.isAuthError(error);        // 401/403 authentication errors
+errorService.isRateLimitError(error);   // 429 rate limiting
+errorService.isServerError(error);      // 5xx server errors
+
+// Format error messages
+const message = errorService.formatErrorMessage(error);
+```
+
+### Error Handling Pattern
+```typescript
+try {
+  const result = await apiClient.getAllPosts();
+  // Handle success
+} catch (error: ApiError) {
+  if (errorService.isNetworkError(error)) {
+    // Show offline message
+  } else if (errorService.isAuthError(error)) {
+    // Redirect to login
+  } else {
+    // Show generic error message
+    const message = errorService.formatErrorMessage(error);
+  }
+}
+```
+
+## Best Practices
+
+### 1. Always Handle Errors
+```typescript
+// ✅ Good
+try {
+  const posts = await apiClient.getAllPosts();
+  setPosts(posts.data.data);
+} catch (error) {
+  setError(errorService.formatErrorMessage(error));
+}
+
+// ❌ Bad
+const posts = await apiClient.getAllPosts();
+setPosts(posts.data.data);
+```
+
+### 2. Use Pagination Correctly
+```typescript
+// ✅ Good - Check for more pages
+const loadMorePosts = async () => {
+  const result = await apiClient.getAllPosts(currentPage + 1);
+  if (result.data.pagination.hasNextPage) {
+    setCurrentPage(currentPage + 1);
+    setPosts([...posts, ...result.data.data]);
+  }
+};
+
+// ❌ Bad - Not checking pagination
+const loadMorePosts = async () => {
+  const result = await apiClient.getAllPosts(currentPage + 1);
+  setPosts([...posts, ...result.data.data]);
+};
+```
+
+### 3. Use TypeScript Types
+```typescript
+// ✅ Good - Proper typing
+const [user, setUser] = useState<User | null>(null);
+const [posts, setPosts] = useState<Newsflash[]>([]);
+
+// ❌ Bad - No typing
+const [user, setUser] = useState(null);
+const [posts, setPosts] = useState([]);
+```
+
+### 4. Optimistic Updates for Likes
+```typescript
+// ✅ Good - Optimistic update
+const handleLike = async (postId: string) => {
+  // Update UI immediately
+  const updatedPosts = posts.map(post => 
+    post.id === postId 
+      ? { ...post, likesCount: post.likesCount + 1 }
+      : post
+  );
+  setPosts(updatedPosts);
+
+  try {
+    await apiClient.toggleLike(postId, currentUserId);
+  } catch (error) {
+    // Revert on error
+    setPosts(posts);
+    showError(errorService.formatErrorMessage(error));
+  }
+};
+```
+
+### 5. Loading States
+```typescript
+// ✅ Good - Proper loading states
+const [loading, setLoading] = useState(false);
+
+const loadPosts = async () => {
+  setLoading(true);
+  try {
+    const result = await apiClient.getAllPosts();
+    setPosts(result.data.data);
+  } catch (error) {
+    setError(errorService.formatErrorMessage(error));
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+## Common Usage Patterns
+
+### Feed Screen
+```typescript
+const useFeed = () => {
+  const [posts, setPosts] = useState<Newsflash[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadFeed = async (page = 1) => {
+    setLoading(true);
+    try {
+      const result = await apiClient.getAllPosts(page);
+      setPosts(page === 1 ? result.data.data : [...posts, ...result.data.data]);
+    } catch (error) {
+      setError(errorService.formatErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { posts, loading, error, loadFeed };
+};
+```
+
+### Profile Screen
+```typescript
+const useProfile = (userId: string) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [posts, setPosts] = useState<Newsflash[]>([]);
+  const [followStatus, setFollowStatus] = useState<UserFollowStatus | null>(null);
+
+  const loadProfile = async () => {
+    try {
+      const [userResult, postsResult, statusResult] = await Promise.all([
+        apiClient.getUserProfile(userId),
+        apiClient.getUserPosts(userId),
+        apiClient.getFollowStatus(userId, currentUserId)
+      ]);
+      
+      setUser(userResult.data);
+      setPosts(postsResult.data.data);
+      setFollowStatus(statusResult.data);
+    } catch (error) {
+      setError(errorService.formatErrorMessage(error));
+    }
+  };
+
+  return { user, posts, followStatus, loadProfile };
+};
+```
+
+## Important Notes
+
+1. **No Comments**: The API client doesn't include comment functionality as it's excluded from the app
+2. **Pagination**: All list endpoints support pagination with `page` and `limit` parameters
+3. **Error Logging**: All errors are automatically logged through the error service
+4. **Type Safety**: All methods are fully typed - always use the provided TypeScript interfaces
+5. **Response Structure**: All responses follow the `ApiResponse<T>` pattern with `success`, `message`, `data`, and `timestamp`
+6. **Authentication**: JWT tokens will be handled automatically when auth is implemented
+7. **Environment**: Base URL can be changed in `constants/api.ts` for different environments

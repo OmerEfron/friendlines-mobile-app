@@ -1,0 +1,19 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Essential Code Elements
+
+## SDK Versions
+- Specify the latest stable versions of React Native and any other essential libraries.
+
+## Import Statements
+- Ensure all components and hooks are imported correctly from their respective paths.
+
+## Error Handling
+- Implement try-catch blocks for API calls and asynchronous operations.
+- Use centralized error logging for easier debugging.
+
+## Documentation
+- Include JSDoc comments for all functions and components to ensure clarity and maintainability.

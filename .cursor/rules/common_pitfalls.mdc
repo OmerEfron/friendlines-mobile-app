@@ -1,0 +1,27 @@
+---
+description: This file documents common pitfalls and solutions. It should be applied when the AI encounters specific issues or when the user requests guidance on avoiding common mistakes.
+globs: 
+alwaysApply: false
+---
+# Common Pitfalls and Solutions
+
+## Pitfall: Incorrect State Management
+- **Solution**: Use React hooks and context API for consistent state management across components.
+
+## Pitfall: API Rate Limiting
+- **Solution**: Implement caching and debouncing strategies to minimize API calls.
+
+## Pitfall: Styling Inconsistencies
+- **Solution**: Use a centralized theme and style guide to ensure consistent styling across the app.
+
+## Pitfall: Poor Performance
+- **Solution**: Optimize component rendering and use lazy loading for heavy components.
+
+## Pitfall: Outdated Configuration Formats
+- **Solution**: Use modern flat config for ESLint v9+, ES modules for all config files, and current Husky format without deprecated shell scripts.
+
+## Pitfall: Deprecated Testing Libraries
+- **Solution**: Use `jest-expo` preset and `@testing-library/react-native` v13.2+ with built-in matchers instead of deprecated `@testing-library/jest-native`.
+
+## Pitfall: Missing Path Aliases
+- **Solution**: Configure Babel module resolver with path aliases for cleaner imports and better code organization.

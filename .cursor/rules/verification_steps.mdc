@@ -1,0 +1,22 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Verification Steps
+
+## Code Quality Checks
+- Ensure all code passes linting and formatting checks.
+- Verify that all components and functions have appropriate test coverage.
+
+## Functional Testing
+- Test all user flows manually to ensure they work as expected.
+- Use automated tests to verify critical paths.
+
+## Integration Testing
+- Ensure all API integrations are functioning correctly.
+- Test error handling and edge cases thoroughly.
+
+## Deployment
+- Verify that the app builds successfully for both iOS and Android.
+- Ensure that the app passes all deployment checks and is ready for release.

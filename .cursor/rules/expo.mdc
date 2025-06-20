@@ -1,0 +1,220 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+  You are an expert in TypeScript, React Native, Expo SDK 53, and Mobile UI development.
+
+  Code Style and Structure
+  - Write concise, technical TypeScript code with accurate examples.
+  - Use functional and declarative programming patterns; avoid classes.
+  - Prefer iteration and modularization over code duplication.
+  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+  - Structure files: exported component, subcomponents, helpers, static content, types.
+  - Follow Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+
+  Naming Conventions
+  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
+  - Favor named exports for components.
+
+  TypeScript Usage
+  - Use TypeScript for all code; prefer interfaces over types.
+  - Avoid enums; use maps instead.
+  - Use functional components with TypeScript interfaces.
+  - Use strict mode in TypeScript for better type safety.
+  - TypeScript version should be ~5.8.3 or higher.
+
+  Syntax and Formatting
+  - Use the "function" keyword for pure functions.
+  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+  - Use declarative JSX.
+  - Use Prettier for consistent code formatting.
+
+  New Architecture (React Native)
+  - The New Architecture is enabled by default in all SDK 53+ projects.
+  - All new projects automatically use the New Architecture with Hermes engine.
+  - For existing projects upgrading to SDK 53, the New Architecture is opt-in but highly recommended.
+  - JSC (JavaScriptCore) is no longer supported in Expo Go; use Hermes instead.
+  - Ensure all third-party native libraries are compatible with the New Architecture.
+  - Use `npx expo-doctor@latest` to check for New Architecture compatibility issues.
+
+  UI and Styling
+  - Use Expo's built-in components for common UI patterns and layouts.
+  - Implement responsive design with Flexbox and Expo's useWindowDimensions for screen size adjustments.
+  - Use styled-components or Tailwind CSS for component styling.
+  - Implement dark mode support using Expo's useColorScheme.
+  - Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props.
+  - Leverage react-native-reanimated and react-native-gesture-handler for performant animations and gestures.
+
+  Safe Area Management
+  - Use SafeAreaProvider from react-native-safe-area-context to manage safe areas globally in your app.
+  - Wrap top-level components with SafeAreaView to handle notches, status bars, and other screen insets on both iOS and Android.
+  - Use SafeAreaScrollView for scrollable content to ensure it respects safe area boundaries.
+  - Avoid hardcoding padding or margins for safe areas; rely on SafeAreaView and context hooks.
+
+  Edge-to-Edge Layouts (Android)
+  - Edge-to-edge is enabled by default in new projects and Expo Go for Android in SDK 53.
+  - Use react-native-edge-to-edge for seamless edge-to-edge display on Android.
+  - For existing projects, edge-to-edge is disabled by default but highly recommended to enable.
+  - Android 16+ will mandate edge-to-edge layouts, so adopt early.
+  - Test edge-to-edge layouts thoroughly on different Android versions.
+
+  Performance Optimization
+  - Minimize the use of useState and useEffect; prefer context and reducers for state management.
+  - Use Expo's AppLoading and SplashScreen for optimized app startup experience.
+  - Optimize images: use WebP format where supported, include size data, implement lazy loading with expo-image.
+  - Implement code splitting and lazy loading for non-critical components with React's Suspense and dynamic imports.
+  - Profile and monitor performance using React Native's built-in tools and Expo's debugging features.
+  - Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
+  - Leverage prebuilt Expo Modules for Android builds (up to 25% faster build times).
+
+  Navigation
+  - Use react-navigation v7 for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
+  - Leverage deep linking and universal links for better user engagement and navigation flow.
+  - Use dynamic routes with expo-router for better navigation handling.
+  - Expo Router now uses React Navigation v7 with improved performance and features.
+  - Use build-time redirects and rewrites for customizing routing behavior.
+  - Implement guarded route groups for protected routes with guard functions.
+  - Use route prefetching to load routes in the background for better performance.
+
+  State Management
+  - Use React Context and useReducer for managing global state.
+  - Leverage react-query for data fetching and caching; avoid excessive API calls.
+  - For complex state management, consider using Zustand or Redux Toolkit.
+  - Handle URL search parameters using libraries like expo-linking.
+  - Be aware that React state setters are now batched automatically with the New Architecture.
+
+  Background Tasks
+  - Use expo-background-task instead of deprecated expo-background-fetch.
+  - Background tasks now use modern platform APIs: WorkManager (Android) and BGTaskScheduler (iOS).
+  - Implement background updates, data synchronization, and routine maintenance tasks.
+  - Use background tasks for OTA updates with expo-updates.
+
+  Audio and Video
+  - Use expo-audio (stable) instead of deprecated expo-av Audio API.
+  - Use expo-video (stable) instead of deprecated expo-av Video component.
+  - Both libraries offer better performance, reliability, and ease of use.
+  - expo-video includes lock screen controls and Picture-in-Picture support.
+  - expo-audio provides modern, stable API for audio playback and recording.
+
+  Images and Media
+  - Use expo-image v2 with the new useImage hook for preloading and better performance.
+  - Leverage expo-image-manipulator's new object-oriented API for image processing.
+  - Use expo-live-photo for iOS Live Photos playback (iOS only).
+  - Implement custom images and icons in expo-notifications for Android.
+
+  File System and Storage
+  - Use expo-file-system/next (beta) for modern file system operations with synchronous APIs.
+  - Use expo-sqlite/kv-store as a drop-in replacement for AsyncStorage with better performance.
+  - Implement SQLCipher support in expo-sqlite for encrypted databases.
+  - Support shared containers on iOS for app extensions.
+
+  Maps and Location
+  - Use expo-maps (alpha) for native maps integration with Google Maps (Android) and Apple Maps (iOS 17+).
+  - Note: expo-maps requires iOS 17+ and uses SwiftUI/Jetpack Compose.
+  - For broader compatibility, continue using react-native-maps with development builds.
+
+  Push Notifications
+  - Push notifications are no longer supported in Expo Go for Android (SDK 53+).
+  - Always use development builds for testing push notifications.
+  - Configure push notifications from the start to ensure production compatibility.
+  - Use expo-notifications with improved background task support.
+
+  Splash Screens
+  - Use expo-splash-screen config plugin instead of the deprecated splash field in app.json.
+  - Android splash screens now use the Android 12+ SplashScreen API.
+  - Full-screen splash images are no longer supported on Android.
+  - Use small, centered images that fit within Android's splash screen constraints.
+  - Support dark mode splash screens through the config plugin.
+  - Implement fade transitions with SplashScreen.setOptions({ fade: true, duration: 1000 }).
+
+  DOM Components
+  - Use DOM Components for incremental web-to-native migration.
+  - Add "use dom" directive to React DOM component files.
+  - Import DOM components into React Native components seamlessly.
+  - Use any web library within DOM components for rapid prototyping.
+
+  Error Handling and Validation
+  - Use Zod for runtime validation and error handling.
+  - Implement proper error logging using Sentry or a similar service.
+  - Prioritize error handling and edge cases:
+    - Handle errors at the beginning of functions.
+    - Use early returns for error conditions to avoid deeply nested if statements.
+    - Avoid unnecessary else statements; use if-return pattern instead.
+    - Implement global error boundaries to catch and handle unexpected errors.
+  - Use expo-error-reporter for logging and reporting errors in production.
+
+  Testing
+  - Write unit tests using Jest and React Native Testing Library.
+  - Implement integration tests for critical user flows using Detox.
+  - Use Expo's testing tools for running tests in different environments.
+  - Consider snapshot testing for components to ensure UI consistency.
+
+  Security
+  - Sanitize user inputs to prevent XSS attacks.
+  - Use react-native-encrypted-storage for secure storage of sensitive data.
+  - Ensure secure communication with APIs using HTTPS and proper authentication.
+  - Use Expo's Security guidelines to protect your app: https://docs.expo.dev/guides/security/
+
+  Development Workflow
+  - Use React Native DevTools instead of the deprecated JavaScript debugger.
+  - Leverage Expo Atlas (now stable) for bundle analysis with EXPO_ATLAS=1 npx expo.
+  - Use experimental tree shaking to remove unused ESM imports/exports.
+  - Enable React Compiler experimentally with "experiments": { "reactCompiler": true }.
+  - Use eager builds with npx expo run --eager for faster feedback on build errors.
+
+  Metro Bundler and Module Resolution
+  - package.json exports field is enabled by default in React Native 0.79+.
+  - Be aware of potential dual package hazards (CommonJS + ESM versions).
+  - Use Metro's improved resolver with up to 15x faster resolution.
+  - Configure Metro for pnpm monorepos automatically.
+  - Handle import.meta with experimental transform plugin if needed.
+
+  Expo Application Services (EAS)
+  - Use frozen lockfiles by default for consistent dependency installation.
+  - Leverage build comparison and fingerprint comparison tools.
+  - Use remote build cache for faster local builds.
+  - Monitor update group statistics and download metrics.
+
+  Internationalization (i18n)
+  - Use expo-localization for internationalization and localization.
+  - Support multiple languages and RTL layouts.
+  - Ensure text scaling and font adjustments for accessibility.
+
+  Platform-Specific Considerations
+  - iOS deployment target is now iOS 15.1+ (bumped from 13.4).
+  - Android minSdkVersion is now 24 (bumped from 23).
+  - Android compileSdkVersion is now 35 (bumped from 34).
+  - Use iOS 18 tinted icons for better system integration.
+  - AppDelegate has migrated from Objective-C to Swift.
+
+  Experimental Features
+  - Expo UI for native SwiftUI/Jetpack Compose components (experimental).
+  - React Server Components and Server Actions (early preview).
+  - Web workers support for web platform.
+  - Remote build caching for local builds.
+
+  Deprecations and Migrations
+  - Migrate from expo-av to expo-audio and expo-video.
+  - Replace expo-background-fetch with expo-background-task.
+  - Remove expo-barcode-scanner (use expo-camera instead).
+  - Update from expo-camera/legacy and expo-sqlite/legacy.
+  - Remove usage of deprecated setImmediate polyfill.
+
+  Key Conventions
+  1. Rely on Expo's managed workflow for streamlined development and deployment.
+  2. Prioritize Mobile Web Vitals (Load Time, Jank, and Responsiveness).
+  3. Use expo-constants for managing environment variables and configuration.
+  4. Use expo-permissions to handle device permissions gracefully.
+  5. Implement expo-updates for over-the-air (OTA) updates with background tasks.
+  6. Follow Expo's best practices for app deployment and publishing: https://docs.expo.dev/distribution/introduction/
+  7. Ensure compatibility with iOS and Android by testing extensively on both platforms.
+  8. Always create development builds for testing native features like notifications.
+  9. Adopt the New Architecture and edge-to-edge layouts early for future compatibility.
+
+  API Documentation
+  - Use Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+  - Reference SDK 53 specific documentation for the latest features and APIs.
+
+  Refer to Expo's documentation for detailed information on Views, Blueprints, and Extensions for best practices.
+    

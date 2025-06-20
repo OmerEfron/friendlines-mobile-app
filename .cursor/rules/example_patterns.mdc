@@ -1,0 +1,98 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+# Example Patterns
+
+## Component Structure
+```tsx
+// Example of a functional component with hooks
+import React from 'react';
+import { View, Text } from 'react-native';
+
+const ExampleComponent: React.FC = () => {
+  // State and logic here
+  return (
+    <View>
+      <Text>Example Component</Text>
+    </View>
+  );
+};
+```
+
+## API Call Pattern
+```tsx
+// Example of an API call with error handling
+import axios from 'axios';
+
+const fetchData = async () => {
+  try {
+    const response = await axios.get('/api/data');
+    // Handle response
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+```
+
+## Configuration Examples
+
+### ESLint Flat Config (ESLint v9+)
+```js
+// eslint.config.js - Modern flat config format
+import js from '@eslint/js';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+```
+
+### Jest Configuration with ES Modules
+```js
+// jest.config.js - ES module export format
+export default {
+  preset: 'jest-expo',
+  testEnvironment: 'jsdom',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+};
+```
+
+### Babel with Module Resolver
+```js
+// babel.config.js - ES module function export
+export default function (api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      [
+        'module-resolver',
+        {
+          alias: {
+            '@': './src',
+            '@components': './src/components',
+          },
+        },
+      ],
+    ],
+  };
+}
+```
+
+## Comments
+- Ensure each example is specific to the use case without extraneous code.
+- Include helpful code comments to explain the logic.
+- Use modern ES module syntax for configuration files.

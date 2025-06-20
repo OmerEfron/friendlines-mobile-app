@@ -1,0 +1,282 @@
+---
+description: WHEN WANTING TO PREFORM ANY GIT RELATED PROCEDURE OR ACTION, READ THIS FILE FIRST
+globs: 
+alwaysApply: false
+---
+# Git Usage Rules for Friendlines Mobile App
+
+## Branch Naming Conventions
+
+### Main Branches
+- `main` - Production-ready code, always deployable
+- `develop` - Integration branch for features, pre-production testing
+
+### Feature Branches
+- `feature/<feature-name>` - New features (e.g., `feature/ai-headline-generation`)
+- `feature/<issue-number>-<short-description>` - Feature with issue reference (e.g., `feature/123-user-authentication`)
+
+### Bug Fix Branches
+- `fix/<bug-description>` - Bug fixes (e.g., `fix/login-validation-error`)
+- `hotfix/<critical-fix>` - Critical production fixes (e.g., `hotfix/security-patch`)
+
+### Other Branch Types
+- `chore/<task-description>` - Maintenance tasks (e.g., `chore/update-dependencies`)
+- `docs/<documentation-update>` - Documentation changes (e.g., `docs/api-documentation`)
+- `refactor/<refactor-description>` - Code refactoring (e.g., `refactor/newsflash-service`)
+
+## Commit Message Conventions
+
+### Format
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Types
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Code style changes (formatting, missing semi-colons, etc.)
+- `refactor` - Code refactoring
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks, dependency updates
+- `perf` - Performance improvements
+- `ci` - CI/CD related changes
+- `build` - Build system or external dependencies
+
+### Scopes (Feature Areas)
+- `auth` - Authentication features
+- `newsflash` - Newsflash/feed functionality
+- `social` - Friends and social features
+- `groups` - Group management
+- `profile` - User profile features
+- `notifications` - Push notifications and alerts
+- `ui` - UI components and styling
+- `api` - API integration
+- `navigation` - App navigation
+- `config` - Configuration changes
+
+### Examples
+```bash
+feat(auth): add social login with Apple ID
+fix(newsflash): resolve infinite scroll loading issue
+docs(readme): update installation instructions
+chore(deps): update expo to version 53.0.0
+refactor(api): simplify error handling in apiClient
+test(auth): add unit tests for login validation
+style(ui): fix button component padding inconsistency
+perf(feed): optimize newsflash list rendering
+```
+
+## Pull Request Guidelines
+
+### PR Title Format
+- Use the same format as commit messages
+- Should be descriptive and concise
+- Example: `feat(notifications): implement real-time push notifications`
+
+### PR Description Template
+```markdown
+## Description
+Brief description of changes made.
+
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] This change requires a documentation update
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+- [ ] Tested on iOS
+- [ ] Tested on Android
+
+## Checklist
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] New and existing unit tests pass locally with my changes
+
+## Screenshots/Videos
+Include screenshots or videos for UI changes.
+
+## Related Issues
+Closes #[issue_number]
+```
+
+### PR Review Requirements
+- At least one approval required before merging
+- All CI checks must pass
+- No merge conflicts
+- Code coverage should not decrease significantly
+
+## Git Workflow
+
+### Feature Development Workflow
+1. Create feature branch from `develop`
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make commits following commit message conventions
+   ```bash
+   git add .
+   git commit -m "feat(scope): description of changes"
+   ```
+
+3. Push feature branch and create PR
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+4. After PR approval, merge to develop
+5. Delete feature branch after successful merge
+
+### Hotfix Workflow
+1. Create hotfix branch from `main`
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b hotfix/critical-fix-description
+   ```
+
+2. Make necessary fixes and commit
+3. Create PR to `main` and `develop`
+4. After approval, merge to both branches
+
+## Git Best Practices
+
+### Commit Best Practices
+- Make atomic commits (one logical change per commit)
+- Write clear, descriptive commit messages
+- Commit early and often
+- Use present tense in commit messages ("Add feature" not "Added feature")
+- Keep commits focused and small
+- Test your code before committing
+
+### Branch Management
+- Keep branches up to date with their base branch
+- Delete merged branches to keep repository clean
+- Use descriptive branch names
+- Don't commit directly to `main` or `develop`
+- Rebase feature branches before merging when possible
+
+### Code Integration
+- Always create a PR for code review
+- Address all review comments before merging
+- Ensure all tests pass before requesting review
+- Keep PRs focused and reasonably sized
+- Squash commits when merging if commit history is messy
+
+### Repository Maintenance
+- Regularly update dependencies
+- Keep the .gitignore file updated
+- Tag releases following semantic versioning
+- Maintain clean commit history
+- Document breaking changes in commit messages
+
+## Git Hooks
+
+### Pre-commit Hooks
+Ensure the following checks run before each commit:
+- ESLint and Prettier formatting
+- TypeScript type checking
+- Unit tests execution
+- Commit message format validation
+
+### Pre-push Hooks
+- Run full test suite
+- Build verification
+- Branch naming validation
+
+## Release Management
+
+### Versioning
+Follow Semantic Versioning (SemVer):
+- `MAJOR.MINOR.PATCH` (e.g., 1.2.3)
+- Major: Breaking changes
+- Minor: New features, backward compatible
+- Patch: Bug fixes, backward compatible
+
+### Release Process
+1. Create release branch from `develop`
+2. Update version numbers and changelog
+3. Create PR to `main`
+4. After merge, tag the release
+5. Merge `main` back to `develop`
+
+### Git Tags
+```bash
+# Create annotated tag
+git tag -a v1.2.3 -m "Release version 1.2.3"
+
+# Push tags to remote
+git push origin --tags
+```
+
+## Emergency Procedures
+
+### Reverting Changes
+```bash
+# Revert a specific commit
+git revert <commit-hash>
+
+# Revert a merge commit
+git revert -m 1 <merge-commit-hash>
+```
+
+### Force Push Guidelines
+- Never force push to `main` or `develop`
+- Only force push to feature branches when necessary
+- Communicate with team before force pushing shared branches
+- Use `--force-with-lease` instead of `--force`
+
+## Integration with CI/CD
+
+### Automated Checks
+- Lint and format checking on every push
+- Unit and integration tests on PR creation
+- Build verification for iOS and Android
+- Security vulnerability scanning
+- Dependency license checking
+
+### EAS Integration
+- Automatic builds triggered on `main` and `develop` pushes
+- Preview builds for feature branch PRs
+- Release builds for tagged commits
+
+## Troubleshooting Common Issues
+
+### Merge Conflicts
+1. Pull latest changes from base branch
+2. Resolve conflicts manually
+3. Test the resolution
+4. Commit the merge resolution
+
+### Large File Management
+- Use Git LFS for large assets if needed
+- Keep binary files in appropriate directories
+- Consider external storage for very large files
+
+### Branch Cleanup
+```bash
+# List merged branches
+git branch --merged
+
+# Delete local merged branches
+git branch -d branch-name
+
+# Delete remote tracking branches
+git remote prune origin
+```
+
+This Git workflow ensures code quality, maintainability, and smooth collaboration for the Friendlines mobile app development team.
