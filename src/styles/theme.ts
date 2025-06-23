@@ -2,50 +2,94 @@ import { Platform } from 'react-native';
 
 export const theme = {
   colors: {
-    // Primary colors - News website style
-    primary: '#1a365d', // Deep blue for news
-    primaryDark: '#0f2027',
-    primaryLight: '#2d5a87',
+    // Primary colors - Vibrant gradient-inspired
+    primary: '#667eea', // Modern purple-blue
+    primaryDark: '#4c63d2',
+    primaryLight: '#8b9ff8',
     
-    // Secondary colors
-    secondary: '#4a5568', // Muted gray
-    secondaryDark: '#2d3748',
-    secondaryLight: '#718096',
+    // Secondary colors - Complementary vibrant palette
+    secondary: '#f093fb', // Pink
+    secondaryDark: '#d55fdf',
+    secondaryLight: '#f4b5ff',
     
-    // Background colors - Clean news layout
+    // Accent colors - Modern social media inspired
+    accent1: '#4facfe', // Bright blue
+    accent2: '#00f2fe', // Cyan
+    accent3: '#43e97b', // Green
+    accent4: '#38f9d7', // Teal
+    accent5: '#fa709a', // Hot pink
+    accent6: '#fee140', // Yellow
+    accent7: '#a8edea', // Mint
+    accent8: '#fed6e3', // Light pink
+    
+    // Background colors - Clean with subtle gradients
     background: '#ffffff',
-    backgroundDark: '#1a202c',
-    surface: '#f7fafc',
-    surfaceDark: '#2d3748',
+    backgroundDark: '#0f0f23',
+    surface: '#f8fafc',
+    surfaceDark: '#1a1a2e',
+    surfaceVariant: '#f1f5f9',
+    surfaceVariantDark: '#16213e',
     
     // Text colors - High contrast for readability
-    text: '#1a202c', // Dark gray for headlines
-    textDark: '#f7fafc',
-    textSecondary: '#4a5568', // Medium gray for body text
-    textSecondaryDark: '#a0aec0',
-    textMuted: '#718096', // Light gray for captions
+    text: '#1e293b', // Slate 800
+    textDark: '#f1f5f9',
+    textSecondary: '#64748b', // Slate 500
+    textSecondaryDark: '#94a3b8',
+    textMuted: '#94a3b8', // Slate 400
+    textMutedDark: '#64748b',
     
     // Border colors
     border: '#e2e8f0',
-    borderDark: '#4a5568',
+    borderDark: '#334155',
+    borderLight: '#f1f5f9',
+    borderLightDark: '#1e293b',
     
-    // Status colors - News-style
-    success: '#38a169', // Green for positive news
-    successDark: '#2f855a',
-    warning: '#d69e2e', // Amber for alerts
-    warningDark: '#b7791f',
-    error: '#e53e3e', // Red for breaking news
-    errorDark: '#c53030',
+    // Status colors - Vibrant and modern
+    success: '#10b981', // Emerald 500
+    successDark: '#059669',
+    successLight: '#34d399',
+    warning: '#f59e0b', // Amber 500
+    warningDark: '#d97706',
+    warningLight: '#fbbf24',
+    error: '#ef4444', // Red 500
+    errorDark: '#dc2626',
+    errorLight: '#f87171',
+    info: '#3b82f6', // Blue 500
+    infoDark: '#2563eb',
+    infoLight: '#60a5fa',
     
-    // News-specific colors
-    newsAccent: '#3182ce', // Blue accent for links
-    newsHighlight: '#fef5e7', // Light yellow for highlights
-    newsBreaking: '#fed7d7', // Light red for breaking news
+    // News-specific colors - Colorful and engaging
+    newsAccent: '#8b5cf6', // Violet 500
+    newsHighlight: '#fef3c7', // Amber 100
+    newsBreaking: '#fecaca', // Red 100
+    newsTrending: '#dbeafe', // Blue 100
+    newsPopular: '#f3e8ff', // Purple 100
+    newsExclusive: '#fef2f2', // Red 50
+    
+    // Social media inspired colors
+    socialBlue: '#1877f2', // Facebook blue
+    socialPurple: '#833ab4', // Instagram purple
+    socialPink: '#fd1d1d', // Instagram pink
+    socialYellow: '#fcb045', // Instagram yellow
+    socialGreen: '#25d366', // WhatsApp green
+    socialRed: '#ff0000', // YouTube red
+    
+    // Gradient colors for cards and buttons
+    gradient1: ['#667eea', '#764ba2'], // Purple to purple
+    gradient2: ['#f093fb', '#f5576c'], // Pink to red
+    gradient3: ['#4facfe', '#00f2fe'], // Blue to cyan
+    gradient4: ['#43e97b', '#38f9d7'], // Green to teal
+    gradient5: ['#fa709a', '#fee140'], // Pink to yellow
+    gradient6: ['#a8edea', '#fed6e3'], // Mint to pink
+    gradient7: ['#ffecd2', '#fcb69f'], // Orange gradient
+    gradient8: ['#a8caba', '#5d4e75'], // Green to purple
     
     // Utility colors
     white: '#ffffff',
     black: '#000000',
     transparent: 'transparent',
+    overlay: 'rgba(0, 0, 0, 0.5)',
+    overlayLight: 'rgba(255, 255, 255, 0.8)',
   },
   
   spacing: {
@@ -225,7 +269,41 @@ export type Theme = typeof theme;
 export const getThemedColors = (isDark: boolean) => ({
   background: isDark ? theme.colors.backgroundDark : theme.colors.background,
   surface: isDark ? theme.colors.surfaceDark : theme.colors.surface,
+  surfaceVariant: isDark ? theme.colors.surfaceVariantDark : theme.colors.surfaceVariant,
   text: isDark ? theme.colors.textDark : theme.colors.text,
   textSecondary: isDark ? theme.colors.textSecondaryDark : theme.colors.textSecondary,
+  textMuted: isDark ? theme.colors.textMutedDark : theme.colors.textMuted,
   border: isDark ? theme.colors.borderDark : theme.colors.border,
-}); 
+  borderLight: isDark ? theme.colors.borderLightDark : theme.colors.borderLight,
+});
+
+// Helper function to get random accent color for variety
+export const getRandomAccentColor = (): string => {
+  const accentColors = [
+    theme.colors.accent1,
+    theme.colors.accent2,
+    theme.colors.accent3,
+    theme.colors.accent4,
+    theme.colors.accent5,
+    theme.colors.accent6,
+    theme.colors.accent7,
+    theme.colors.accent8,
+  ];
+  return accentColors[Math.floor(Math.random() * accentColors.length)];
+};
+
+// Helper function to get gradient colors
+export const getGradientColors = (gradientIndex: number = 1): [string, string] => {
+  const gradients = [
+    theme.colors.gradient1,
+    theme.colors.gradient2,
+    theme.colors.gradient3,
+    theme.colors.gradient4,
+    theme.colors.gradient5,
+    theme.colors.gradient6,
+    theme.colors.gradient7,
+    theme.colors.gradient8,
+  ];
+  const selectedGradient = gradients[(gradientIndex - 1) % gradients.length];
+  return [selectedGradient[0], selectedGradient[1]] as [string, string];
+}; 

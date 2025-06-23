@@ -27,6 +27,7 @@
     "expo-background-task": "^0.2.7",
     "expo-constants": "^17.1.6",
     "expo-font": "^13.3.1",
+    "expo-linear-gradient": "~14.1.5",
     "expo-notifications": "^0.31.3",
     "expo-secure-store": "~14.2.3",
     "expo-splash-screen": "^0.30.9",

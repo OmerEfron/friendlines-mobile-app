@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Badge } from '../common/Badge';
 import { Avatar } from '../common/Avatar';
-import { theme } from '../../styles/theme';
+import { theme, getGradientColors, getRandomAccentColor } from '../../styles/theme';
 import type { Newsflash } from '../../types';
 
 interface NewsflashCardProps {
@@ -32,13 +33,13 @@ const formatTimeAgo = (date: Date | string): string => {
 const getSentimentColor = (sentiment?: string): string => {
   switch (sentiment) {
     case 'playful':
-      return theme.colors.warning;
+      return theme.colors.accent6; // Yellow
     case 'proud':
-      return theme.colors.success;
+      return theme.colors.accent3; // Green
     case 'nostalgic':
-      return '#8b5cf6'; // purple
+      return theme.colors.accent5; // Hot pink
     default:
-      return theme.colors.secondary;
+      return theme.colors.accent1; // Bright blue
   }
 };
 
@@ -105,131 +106,147 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
       onPress={onPress}
       activeOpacity={0.95}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.authorInfo}>
-          <Avatar 
-            size="sm" 
-            source={newsflash.author?.avatar}
-            fallback={newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
-          />
-          <View style={styles.authorDetails}>
-            <Text style={styles.authorName}>
-              {newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
-            </Text>
-            <Text style={styles.timestamp}>
-              {formatTimeAgo(newsflash.timestamp || newsflash.createdAt)}
-            </Text>
+      <LinearGradient
+        colors={getGradientColors(3)}
+        style={styles.cardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.authorInfo}>
+            <Avatar 
+              size="sm" 
+              source={newsflash.author?.avatar}
+              fallback={newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
+            />
+            <View style={styles.authorDetails}>
+              <Text style={styles.authorName}>
+                {newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
+              </Text>
+              <Text style={styles.timestamp}>
+                {formatTimeAgo(newsflash.timestamp || newsflash.createdAt)}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.headerActions}>
+            {newsflash.sentiment && (
+              <View style={[styles.sentimentBadge, { backgroundColor: getSentimentColor(newsflash.sentiment) + '20' }]}>
+                <Ionicons 
+                  name={getSentimentIcon(newsflash.sentiment) as any} 
+                  size={12} 
+                  color={getSentimentColor(newsflash.sentiment)} 
+                />
+                <Text style={[styles.sentimentText, { color: getSentimentColor(newsflash.sentiment) }]}>
+                  {getSentimentLabel(newsflash.sentiment)}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity 
+              style={styles.bookmarkButton}
+              onPress={handleBookmarkPress}
+            >
+              <Ionicons 
+                name="bookmark-outline" 
+                size={20} 
+                color={theme.colors.white} 
+              />
+            </TouchableOpacity>
           </View>
         </View>
-        
-        <View style={styles.headerActions}>
-          {newsflash.sentiment && (
-            <Badge>
-              {newsflash.sentiment}
-            </Badge>
+
+        {/* Content */}
+        <View style={styles.content}>
+          {newsflash.headline && (
+            <Text style={styles.headline} numberOfLines={3}>
+              {newsflash.headline}
+            </Text>
           )}
-          <TouchableOpacity 
-            style={styles.bookmarkButton}
-            onPress={handleBookmarkPress}
-          >
-            <Ionicons 
-              name="bookmark-outline" 
-              size={20} 
-              color={theme.colors.textSecondary} 
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        {newsflash.headline && (
-          <Text style={styles.headline} numberOfLines={3}>
-            {newsflash.headline}
+          
+          <Text style={styles.bodyText} numberOfLines={4}>
+            {newsflash.generatedText || newsflash.transformedText || newsflash.originalText}
           </Text>
-        )}
-        
-        <Text style={styles.bodyText} numberOfLines={4}>
-          {newsflash.generatedText || newsflash.transformedText || newsflash.originalText}
-        </Text>
-        
-        {newsflash.groups && newsflash.groups.length > 0 && (
-          <View style={styles.groupsContainer}>
-            <Ionicons name="people" size={14} color={theme.colors.textSecondary} />
-            <Text style={styles.groupsText}>
-              Shared in {newsflash.groups.length} group{newsflash.groups.length > 1 ? 's' : ''}
-            </Text>
+          
+          {newsflash.groups && newsflash.groups.length > 0 && (
+            <View style={styles.groupsContainer}>
+              <Ionicons name="people" size={14} color={theme.colors.white} />
+              <Text style={styles.groupsText}>
+                Shared in {newsflash.groups.length} group{newsflash.groups.length > 1 ? 's' : ''}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Actions */}
+        {showActions && (
+          <View style={styles.actions}>
+            <TouchableOpacity 
+              style={[styles.actionButton, isLiked && styles.actionButtonActive]}
+              onPress={handleLikePress}
+            >
+              <Ionicons 
+                name={isLiked ? "heart" : "heart-outline"} 
+                size={18} 
+                color={isLiked ? theme.colors.errorLight : theme.colors.white} 
+              />
+              <Text style={[
+                styles.actionText,
+                isLiked && styles.actionTextActive
+              ]}>
+                {likeCount}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={handleCommentPress}
+            >
+              <Ionicons name="chatbubble-outline" size={18} color={theme.colors.white} />
+              <Text style={styles.actionText}>{commentCount}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.actionButton, isShared && styles.actionButtonActive]}
+              onPress={handleSharePress}
+            >
+              <Ionicons 
+                name={isShared ? "share" : "share-outline"} 
+                size={18} 
+                color={isShared ? theme.colors.accent2 : theme.colors.white} 
+              />
+              <Text style={[
+                styles.actionText,
+                isShared && styles.actionTextActive
+              ]}>
+                {shareCount}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.spacer} />
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="ellipsis-horizontal" size={18} color={theme.colors.white} />
+            </TouchableOpacity>
           </View>
         )}
-      </View>
-
-      {/* Actions */}
-      {showActions && (
-        <View style={styles.actions}>
-          <TouchableOpacity 
-            style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-            onPress={handleLikePress}
-          >
-            <Ionicons 
-              name={isLiked ? "heart" : "heart-outline"} 
-              size={18} 
-              color={isLiked ? theme.colors.error : theme.colors.textSecondary} 
-            />
-            <Text style={[
-              styles.actionText,
-              isLiked && styles.actionTextActive
-            ]}>
-              {likeCount}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={handleCommentPress}
-          >
-            <Ionicons name="chatbubble-outline" size={18} color={theme.colors.textSecondary} />
-            <Text style={styles.actionText}>{commentCount}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionButton, isShared && styles.actionButtonActive]}
-            onPress={handleSharePress}
-          >
-            <Ionicons 
-              name={isShared ? "share" : "share-outline"} 
-              size={18} 
-              color={isShared ? theme.colors.newsAccent : theme.colors.textSecondary} 
-            />
-            <Text style={[
-              styles.actionText,
-              isShared && styles.actionTextActive
-            ]}>
-              {shareCount}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.spacer} />
-
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      )}
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
     marginHorizontal: theme.spacing.md,
     marginVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.lg,
+  },
+  cardGradient: {
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.sm,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   header: {
     flexDirection: 'row',
@@ -248,35 +265,63 @@ const styles = StyleSheet.create({
   },
   authorName: {
     ...theme.typography.subheadline,
-    color: theme.colors.text,
+    color: theme.colors.white,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   timestamp: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
+    color: theme.colors.white,
     marginTop: 2,
+    opacity: 0.8,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  sentimentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    marginRight: theme.spacing.sm,
+  },
+  sentimentText: {
+    ...theme.typography.caption,
+    marginLeft: theme.spacing.xs,
+    fontWeight: '600',
+  },
   bookmarkButton: {
     marginLeft: theme.spacing.sm,
     padding: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   content: {
     marginBottom: theme.spacing.md,
   },
   headline: {
     ...theme.typography.headline,
-    color: theme.colors.text,
+    color: theme.colors.white,
     marginBottom: theme.spacing.sm,
     lineHeight: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   bodyText: {
     ...theme.typography.body,
-    color: theme.colors.text,
+    color: theme.colors.white,
     lineHeight: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   groupsContainer: {
     flexDirection: 'row',
@@ -285,15 +330,16 @@ const styles = StyleSheet.create({
   },
   groupsText: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
+    color: theme.colors.white,
     marginLeft: theme.spacing.xs,
+    opacity: 0.8,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
   actionButton: {
     flexDirection: 'row',
@@ -304,16 +350,18 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
   },
   actionButtonActive: {
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   actionText: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
+    color: theme.colors.white,
     marginLeft: theme.spacing.xs,
     fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   actionTextActive: {
-    color: theme.colors.primary,
     fontWeight: '600',
   },
   spacer: {
