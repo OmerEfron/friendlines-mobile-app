@@ -121,16 +121,11 @@ export interface AuthUser {
 }
 
 // Mobile-specific navigation types
-export type RootTabParamList = {
-  Home: undefined;
-  Create: undefined;
-  Profile: { userId?: string };
-  Friends: undefined;
-  Groups: undefined;
-};
-
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainFeed: undefined;
+  GroupFeeds: undefined;
+  UserFeed: { userId?: string };
+  CreateNewsflash: undefined;
   NewsflashDetail: { newsflashId: string };
   UserProfile: { userId: string };
   Settings: undefined;
@@ -139,6 +134,17 @@ export type RootStackParamList = {
   GroupDetail: { groupId: string };
   CreateGroup: undefined;
   ManageGroup: { groupId: string };
+  Search: undefined;
+  Menu: undefined;
+};
+
+// Legacy tab types (keeping for backward compatibility)
+export type RootTabParamList = {
+  Home: undefined;
+  Create: undefined;
+  Profile: { userId?: string };
+  Friends: undefined;
+  Groups: undefined;
 };
 
 // Notification types
