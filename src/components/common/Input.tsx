@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TextInput, View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { TextInput, View, Text, StyleSheet, Platform, Keyboard } from 'react-native';
 import { theme } from '../../styles/theme';
 
 interface InputProps {
@@ -40,9 +40,53 @@ export const Input: React.FC<InputProps> = ({
   inputStyle,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const textInputRef = useRef<TextInput>(null);
+  const focusTimeRef = useRef<number>(0);
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = () => setIsFocused(false);
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      console.log('⌨️ Keyboard DID SHOW');
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      console.log('⌨️ Keyboard DID HIDE');
+    });
+    const keyboardWillShowListener = Keyboard.addListener('keyboardWillShow', () => {
+      console.log('⌨️ Keyboard WILL SHOW');
+    });
+    const keyboardWillHideListener = Keyboard.addListener('keyboardWillHide', () => {
+      console.log('⌨️ Keyboard WILL HIDE');
+    });
+
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+      keyboardWillShowListener?.remove();
+      keyboardWillHideListener?.remove();
+    };
+  }, []);
+
+  const handleFocus = () => {
+    console.log('🎯 Input handleFocus called');
+    focusTimeRef.current = Date.now();
+    setIsFocused(true);
+  };
+  
+  const handleBlur = () => {
+    console.log('🔴 Input handleBlur called');
+    const timeSinceFocus = Date.now() - focusTimeRef.current;
+    console.log('⏱️ Time since focus:', timeSinceFocus, 'ms');
+    
+    // If blur happens within 100ms of focus, it's likely the bug - try to refocus
+    if (timeSinceFocus < 100 && Platform.OS === 'android') {
+      console.log('🔄 Attempting to refocus due to quick blur');
+      setTimeout(() => {
+        textInputRef.current?.focus();
+      }, 50);
+      return;
+    }
+    
+    setIsFocused(false);
+  };
 
   const hasError = Boolean(error);
   const characterCount = value?.length || 0;
@@ -69,9 +113,21 @@ export const Input: React.FC<InputProps> = ({
             inputStyle,
           ]}
           value={value}
-          onChangeText={onChangeText}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onChangeText={(text) => {
+            console.log('📝 TextInput onChangeText:', text.length, 'chars');
+            onChangeText(text);
+          }}
+          onFocus={(e) => {
+            console.log('🎯 TextInput onFocus event:', e.nativeEvent);
+            handleFocus();
+          }}
+          onBlur={(e) => {
+            console.log('🔴 TextInput onBlur event:', e.nativeEvent);
+            handleBlur();
+          }}
+          onTouchStart={() => console.log('👆 TextInput onTouchStart')}
+          onPressIn={() => console.log('👇 TextInput onPressIn')}
+          onPressOut={() => console.log('👆 TextInput onPressOut')}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textSecondary}
           multiline={multiline}
@@ -87,7 +143,10 @@ export const Input: React.FC<InputProps> = ({
           accessibilityHint={error ? `Error: ${error}` : undefined}
           accessibilityState={{ disabled: !editable }}
           textAlignVertical={multiline ? 'top' : 'center'}
+          blurOnSubmit={false}
+          returnKeyType="default"
           {...(Platform.OS === 'ios' && multiline && { textAlignVertical: 'top' })}
+          ref={textInputRef}
         />
       </View>
 

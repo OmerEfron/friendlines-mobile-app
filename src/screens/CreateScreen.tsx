@@ -6,6 +6,8 @@ import { useNewsflashes } from '../hooks/useNewsflashes';
 import { useMockData } from '../hooks/useMockData';
 
 const CreateScreen: React.FC = () => {
+  console.log('📝 CreateScreen rendering');
+  
   const [originalText, setOriginalText] = useState('');
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
@@ -13,6 +15,11 @@ const CreateScreen: React.FC = () => {
 
   const { currentUser, friends, groups } = useMockData();
   const { createNewsflash, isLoading } = useNewsflashes(currentUser);
+
+  const handleTextChange = (text: string): void => {
+    console.log('✏️ CreateScreen text changed:', text.length, 'characters');
+    setOriginalText(text);
+  };
 
   const handleSubmit = async (): Promise<void> => {
     if (!originalText.trim()) {
@@ -73,13 +80,13 @@ const CreateScreen: React.FC = () => {
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
       >
         <Input
           label="What's happening in your life?"
           placeholder="e.g., 'I just finished my first marathon!'"
           value={originalText}
-          onChangeText={setOriginalText}
+          onChangeText={handleTextChange}
           multiline
           numberOfLines={6}
           maxLength={500}

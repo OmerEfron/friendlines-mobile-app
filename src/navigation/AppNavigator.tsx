@@ -17,8 +17,11 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
 const TabNavigator: React.FC = () => {
+  console.log('📱 TabNavigator rendering with detachInactiveScreens=false');
+  
   return (
     <Tab.Navigator
+      detachInactiveScreens={false}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -83,8 +86,11 @@ const TabNavigator: React.FC = () => {
 };
 
 const RootNavigator: React.FC = () => {
+  console.log('📚 RootNavigator rendering with detachInactiveScreens=false');
+  
   return (
     <Stack.Navigator
+      detachInactiveScreens={false}
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.background,
@@ -94,7 +100,6 @@ const RootNavigator: React.FC = () => {
           fontWeight: '600',
           fontSize: 18,
         },
-
       }}
     >
       <Stack.Screen 
