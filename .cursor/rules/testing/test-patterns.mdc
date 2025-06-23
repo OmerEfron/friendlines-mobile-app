@@ -1,0 +1,164 @@
+---
+description: 
+globs: *.test.*
+alwaysApply: false
+---
+# Testing Patterns
+
+## Test Structure
+Follow the established testing patterns using Jest and React Native Testing Library.
+
+## Component Test Pattern
+```typescript
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Button } from '../Button';
+
+describe('Button Component', () => {
+  it('renders correctly with title', () => {
+    const { getByText } = render(
+      <Button title="Test Button" onPress={() => {}} />
+    );
+    
+    expect(getByText('Test Button')).toBeTruthy();
+  });
+
+  it('calls onPress when pressed', () => {
+    const mockOnPress = jest.fn();
+    const { getByText } = render(
+      <Button title="Test Button" onPress={mockOnPress} />
+    );
+    
+    fireEvent.press(getByText('Test Button'));
+    expect(mockOnPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows disabled state correctly', () => {
+    const { getByText } = render(
+      <Button title="Test Button" onPress={() => {}} disabled />
+    );
+    
+    const button = getByText('Test Button').parent;
+    expect(button?.props.accessibilityState?.disabled).toBe(true);
+  });
+});
+```
+
+## Hook Test Pattern
+```typescript
+import { renderHook, waitFor } from '@testing-library/react-hooks';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useNewsflashes } from '../useNewsflashes';
+import { mockUser } from '../../__tests__/mocks';
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
+describe('useNewsflashes Hook', () => {
+  it('fetches newsflashes correctly', async () => {
+    const { result } = renderHook(
+      () => useNewsflashes(mockUser),
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.newsflashes).toBeDefined();
+    expect(Array.isArray(result.current.newsflashes)).toBe(true);
+  });
+
+  it('handles create newsflash correctly', async () => {
+    const { result } = renderHook(
+      () => useNewsflashes(mockUser),
+      { wrapper: createWrapper() }
+    );
+
+    const createData = {
+      originalText: 'Test newsflash',
+      recipients: ['user1'],
+      groups: [],
+    };
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await result.current.createNewsflash(createData);
+    
+    expect(result.current.newsflashes.length).toBeGreaterThan(0);
+  });
+});
+```
+
+## Screen Test Pattern
+```typescript
+import React from 'react';
+import { render, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HomeScreen } from '../HomeScreen';
+
+const createTestWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
+describe('HomeScreen', () => {
+  it('renders header correctly', () => {
+    const { getByText } = render(<HomeScreen />, {
+      wrapper: createTestWrapper(),
+    });
+    
+    expect(getByText('Friendlines')).toBeTruthy();
+    expect(getByText('Because friendships deserve headlines')).toBeTruthy();
+  });
+
+  it('shows loading state initially', () => {
+    const { getByText } = render(<HomeScreen />, {
+      wrapper: createTestWrapper(),
+    });
+    
+    expect(getByText('Loading newsflashes...')).toBeTruthy();
+  });
+});
+```
+
+## Testing Standards
+- Use React Native Testing Library for component testing
+- Use `renderHook` for custom hook testing
+- Include proper test wrappers for React Query
+- Test accessibility properties and labels
+- Mock external dependencies and API calls
+- Use descriptive test names and organize with describe blocks
+- Include happy path, error cases, and edge cases
+- Test user interactions with fireEvent
+- Use waitFor for async operations
+
+## Mock Patterns
+- Create mock data in `__tests__/mocks` directory
+- Mock API services with Jest
+- Use React Query test utilities
+- Mock navigation and other external dependencies

@@ -1,0 +1,57 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TypeScript Standards for Friendlines
+
+## Type Definitions
+- Use the established types from `src/types/index.ts`
+- Create interfaces for all component props
+- Use proper generic typing for hooks and utilities
+- Import types with `import type` syntax
+
+## Established Types
+- `User`: Core user interface with id, name, avatar, email
+- `Newsflash`: Main content type with transformation fields
+- `Friend`: User relationship with status tracking
+- `Group`: Collection of users for sharing
+- Navigation types: `RootTabParamList`, `RootStackParamList`
+
+## Component Typing
+```typescript
+// Component props interface
+interface ComponentNameProps {
+  // Required props first
+  title: string;
+  onPress: () => void;
+  // Optional props with ?
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+
+// Component with typed props
+const ComponentName: React.FC<ComponentNameProps> = ({ 
+  title, 
+  onPress, 
+  variant = 'primary',
+  disabled = false 
+}) => {
+  // implementation
+};
+```
+
+## Hook Typing
+- Use proper return type interfaces for custom hooks
+- Type async functions with Promise<ReturnType>
+- Use proper generic constraints for flexible hooks
+
+## API and Service Typing
+- Use ApiResponse<T> wrapper for all API calls
+- Type API functions with proper error handling
+- Use the established ApiError class for error typing
+
+## Style Typing
+- Use StyleSheet.create return type for styles
+- Reference theme types for consistent styling
+- Use proper ViewStyle, TextStyle, ImageStyle unions

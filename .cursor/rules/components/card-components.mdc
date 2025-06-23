@@ -1,0 +1,81 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Card Component Patterns
+
+## Card Structure
+Follow the established Card, CardHeader, CardContent pattern from the existing NewsflashCard component.
+
+## NewsflashCard Pattern
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Card, CardHeader, CardContent } from './Card';
+import { Badge } from '../common/Badge';
+import { Avatar } from '../common/Avatar';
+import { theme } from '../../styles/theme';
+
+interface CardProps {
+  // Define your data interface
+  item: SomeDataType;
+}
+
+export const SomeCard: React.FC<CardProps> = ({ item }) => {
+  return (
+    <Card
+      borderColor={theme.colors.primary}
+      borderWidth={2}
+      style={styles.card}
+    >
+      <CardHeader>
+        <View style={styles.header}>
+          <View style={styles.userInfo}>
+            <Avatar
+              source={item.author.avatar}
+              fallback={item.author.name}
+              size="sm"
+            />
+            <View style={styles.textInfo}>
+              <Text style={styles.title} numberOfLines={2}>
+                {item.title}
+              </Text>
+              <Text style={styles.subtitle}>
+                {item.subtitle}
+              </Text>
+            </View>
+          </View>
+          {item.badge && (
+            <Badge variant="secondary" size="sm">
+              {item.badge}
+            </Badge>
+          )}
+        </View>
+      </CardHeader>
+      
+      <CardContent>
+        <Text style={styles.content}>
+          {item.content}
+        </Text>
+      </CardContent>
+    </Card>
+  );
+};
+```
+
+## Card Standards
+- Use Card wrapper with proper border styling
+- Include CardHeader for meta information
+- Use CardContent for main content
+- Include Avatar + text info pattern for user data
+- Add Badge components for status/category indicators
+- Use numberOfLines for text truncation
+- Apply consistent spacing from theme
+- Include proper accessibility support
+
+## Common Card Patterns
+- **User Info**: Avatar + name/title + timestamp
+- **Status Badges**: Color-coded status indicators
+- **Actions**: TouchableOpacity wrapper for card interactions
+- **Content Hierarchy**: Title, subtitle, body content structure

@@ -1,0 +1,101 @@
+---
+description: 
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+# Component Creation Patterns
+
+## Component Structure
+- Follow the established component organization in `src/components/`
+- Use proper TypeScript interfaces for all props
+- Implement consistent styling with theme system
+- Export components from index files for clean imports
+
+## Component Template
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { theme } from '../../styles/theme';
+
+interface ComponentNameProps {
+  // Required props first
+  title: string;
+  onPress: () => void;
+  // Optional props with defaults
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+  style?: ViewStyle;
+}
+
+export const ComponentName: React.FC<ComponentNameProps> = ({
+  title,
+  onPress,
+  variant = 'primary',
+  disabled = false,
+  style,
+}) => {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.container,
+        styles[variant],
+        disabled && styles.disabled,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <Text style={[styles.text, styles[`${variant}Text`]]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primary: {
+    backgroundColor: theme.colors.primary,
+  },
+  secondary: {
+    backgroundColor: theme.colors.secondary,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  text: {
+    ...theme.typography.button,
+    fontWeight: '600',
+  },
+  primaryText: {
+    color: theme.colors.background,
+  },
+  secondaryText: {
+    color: theme.colors.text,
+  },
+});
+```
+
+## Component Standards
+- Use named exports for components
+- Include proper accessibility properties
+- Implement variant patterns for flexibility
+- Handle disabled states consistently
+- Use theme system for all styling
+- Include style prop for customization
+
+## Established Component Patterns
+- **Cards**: Use Card, CardHeader, CardContent structure
+- **Forms**: Input, Button, Badge components with consistent styling
+- **Display**: Avatar with fallback patterns
+- **Layout**: Consistent spacing and responsive design

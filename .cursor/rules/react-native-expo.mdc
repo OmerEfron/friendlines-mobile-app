@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# React Native & Expo Standards for Friendlines
+
+## Core Principles
+- Follow Expo SDK v53 patterns and best practices
+- Use TypeScript strictly with proper type definitions
+- Implement responsive design with SafeAreaView and proper spacing
+- Follow the established theme system in `src/styles/theme.ts`
+
+## Component Structure
+- Use functional components with React hooks
+- Import React explicitly: `import React from 'react'`
+- Use StyleSheet.create for styling, never inline styles
+- Follow the established spacing scale from theme
+- Use SafeAreaView for screen-level components
+
+## Navigation
+- Use React Navigation v7 patterns
+- Type navigation props with established param lists
+- Use proper accessibility labels for tab navigation
+- Follow the stack/tab navigation structure established
+
+## Performance
+- Use React.memo for expensive components
+- Implement proper key props for lists
+- Use FlatList for long lists, ScrollView for short content
+- Implement proper loading states
+
+## Platform Considerations
+- Use Platform.OS for platform-specific code
+- Handle safe areas properly with react-native-safe-area-context
+- Test on both iOS and Android patterns
+
+## Dependencies
+- Prefer Expo-managed modules over bare React Native
+- Use established dependencies from package.json
+- Follow version compatibility with Expo SDK v53

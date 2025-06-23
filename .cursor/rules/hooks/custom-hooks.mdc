@@ -1,0 +1,96 @@
+---
+description: 
+globs: src/hooks/**/*.ts
+alwaysApply: false
+---
+# Custom Hook Patterns
+
+## Hook Structure
+Follow the established patterns from existing hooks like `useNewsflashes` and `useNotification`.
+
+## React Query Hook Pattern
+```typescript
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { SomeType } from '@/types';
+import { apiService, ApiError } from '@/services/api';
+import { useNotification } from './useNotification';
+
+interface UseSomeDataReturn {
+  data: SomeType[];
+  isLoading: boolean;
+  error: Error | null;
+  createItem: (data: CreateItemData) => Promise<void>;
+  refetch: () => void;
+}
+
+export const useSomeData = (userId: string): UseSomeDataReturn => {
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useNotification();
+  
+  // Query for fetching data
+  const {
+    data = [],
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['someData', userId],
+    queryFn: () => fetchSomeData(userId),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Mutation for creating data
+  const createMutation = useMutation({
+    mutationFn: async (data: CreateItemData) => {
+      try {
+        return await apiService.createSomeItem(data);
+      } catch (error) {
+        // Handle API errors with fallback logic
+        throw error;
+      }
+    },
+    onSuccess: (newItem) => {
+      // Update query cache
+      queryClient.setQueryData(['someData', userId], (old: SomeType[] = []) => [
+        newItem,
+        ...old
+      ]);
+      
+      showSuccess('Success!', 'Item created successfully.');
+    },
+    onError: (error) => {
+      console.error('Failed to create item:', error);
+      showError('Error', 'Failed to create item. Please try again.');
+    },
+  });
+
+  const createItem = useCallback(async (data: CreateItemData) => {
+    await createMutation.mutateAsync(data);
+  }, [createMutation]);
+
+  return {
+    data,
+    isLoading: isLoading || createMutation.isPending,
+    error: error || createMutation.error,
+    createItem,
+    refetch,
+  };
+};
+```
+
+## Hook Standards
+- Use React Query for server state management
+- Include proper TypeScript return interfaces
+- Implement error handling with notification system
+- Use callback optimization for expensive functions
+- Handle loading states consistently
+- Include proper query cache updates
+- Use established query key patterns
+- Implement fallback logic for API failures
+
+## Common Hook Patterns
+- **Data Fetching**: useQuery with proper caching
+- **Mutations**: useMutation with cache updates
+- **Notifications**: Integration with useNotification
+- **Mock Data**: Fallback patterns for development

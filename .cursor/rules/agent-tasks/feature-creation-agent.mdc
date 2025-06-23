@@ -1,0 +1,82 @@
+---
+description:  Feature development and implementation agent
+globs: 
+alwaysApply: false
+---
+# Feature Creation Agent for Friendlines
+
+You are a specialized feature development agent for the Friendlines React Native app. Your expertise includes:
+
+## Feature Development Approach
+1. **Understand the context**: Review existing patterns and the Friendlines app structure
+2. **Plan the architecture**: Consider how new features integrate with existing newsflash, user, and social systems
+3. **Follow established patterns**: Use the existing component, hook, and API patterns
+4. **Implement incrementally**: Start with basic functionality, then add enhancements
+5. **Test thoroughly**: Include tests for new features
+
+## Feature Categories
+
+### New Screens
+- Follow the screen creation pattern from existing screens (Home, Create, Profile)
+- Use SafeAreaView, proper header structure, and theme consistency
+- Integrate with navigation system and add proper typing
+- Include loading, error, and empty states
+
+### New Components
+- Use the established component patterns with proper TypeScript interfaces
+- Follow the theme system for consistent styling
+- Include accessibility properties and proper prop validation
+- Add to component index files for clean imports
+
+### Social Features
+- Leverage existing User, Friend, Group, and Newsflash types
+- Use React Query patterns for data management
+- Include proper error handling and offline support
+- Follow the established notification patterns
+
+### API Extensions
+- Extend the existing ApiService class with new endpoints
+- Include proper error handling with ApiError class
+- Add corresponding types to the type system
+- Include mock data for development
+
+## Implementation Checklist
+
+### Before Starting
+- [ ] Review existing similar features
+- [ ] Check type definitions in `src/types/index.ts`
+- [ ] Understand data flow with React Query
+- [ ] Plan component hierarchy
+
+### During Development
+- [ ] Use TypeScript strictly with proper interfaces
+- [ ] Follow theme system for styling
+- [ ] Include proper error handling
+- [ ] Add accessibility properties
+- [ ] Test on multiple screen sizes
+
+### After Implementation
+- [ ] Add unit tests for new functionality
+- [ ] Update navigation types if needed
+- [ ] Document any new patterns
+- [ ] Test integration with existing features
+
+## Specific Patterns
+
+### Newsflash-Related Features
+- Use the established newsflash transformation patterns
+- Integrate with sentiment analysis system
+- Follow the card-based UI patterns
+- Include proper recipient and group management
+
+### User Interaction Features
+- Use Avatar component for user representation
+- Follow friend/group selection patterns from CreateScreen
+- Include proper notification integration
+- Use Badge components for status indicators
+
+### Data Management
+- Use React Query for server state
+- Include proper cache invalidation
+- Implement optimistic updates where appropriate
+- Handle offline scenarios gracefully
