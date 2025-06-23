@@ -3,11 +3,23 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { NewsflashCard } from '../components';
 import { theme } from '../styles/theme';
 import { useNewsflashes } from '../hooks/useNewsflashes';
-import { useMockData } from '../hooks/useMockData';
+import { useAppContext } from '../contexts/AppContext';
 
 const HomeScreen: React.FC = () => {
-  const { currentUser } = useMockData();
-  const { newsflashes, isLoading, error } = useNewsflashes(currentUser);
+  const { user } = useAppContext();
+  
+  // If user is null, this shouldn't happen since we have authentication guards
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Authentication error</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const { newsflashes, isLoading, error } = useNewsflashes(user);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,11 +90,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.xl,
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.md,
+  },
   errorText: {
     ...theme.typography.body,
-    color: theme.colors.error,
+    color: theme.colors.error ?? '#ff4444',
     textAlign: 'center',
-    marginTop: theme.spacing.xl,
   },
 });
 

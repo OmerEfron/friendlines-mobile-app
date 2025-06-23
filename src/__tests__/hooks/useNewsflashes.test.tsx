@@ -27,8 +27,13 @@ jest.mock('../../utils', () => ({
 const mockUser = {
   id: 'user-1',
   name: 'Test User',
+  fullName: 'Test User',
   email: 'test@example.com',
   avatar: 'https://example.com/avatar.jpg',
+  followersCount: 10,
+  followingCount: 15,
+  createdAt: '2023-01-01T00:00:00.000Z',
+  updatedAt: '2023-01-01T00:00:00.000Z',
 };
 
 const mockNewsflash = {

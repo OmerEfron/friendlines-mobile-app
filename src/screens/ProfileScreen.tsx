@@ -1,16 +1,53 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
-import { Card, CardHeader, CardContent, Avatar } from '../components';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { Avatar, Button } from '../components';
 import { theme } from '../styles/theme';
-import { useMockData } from '../hooks/useMockData';
+import { useAppContext } from '../contexts/AppContext';
 
 const ProfileScreen: React.FC = () => {
-  const { currentUser, friends, groups } = useMockData();
+  const { user, logout } = useAppContext();
+  
+  // If user is null, this shouldn't happen since we have authentication guards
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Authentication error</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const handleLogout = (): void => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Profile</Text>
+        <Text style={styles.subtitle}>Your Friendlines account</Text>
       </View>
       
       <ScrollView 
@@ -18,67 +55,53 @@ const ProfileScreen: React.FC = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <Card style={styles.profileCard}>
-          <CardHeader>
-            <View style={styles.profileHeader}>
-              <Avatar
-                source={currentUser.avatar}
-                fallback={currentUser.name}
-                size="xl"
-                style={styles.avatar}
-              />
-              <View style={styles.userInfo}>
-                <Text style={styles.userName}>{currentUser.name}</Text>
-                <Text style={styles.userEmail}>{currentUser.email}</Text>
-              </View>
-            </View>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <Text style={styles.sectionTitle}>Friends</Text>
-          </CardHeader>
-          <CardContent>
-            <Text style={styles.count}>{friends.length} friends</Text>
-            <View style={styles.friendsList}>
-              {friends.slice(0, 6).map(friend => (
-                <View key={friend.user.id} style={styles.friendItem}>
-                  <Avatar
-                    source={friend.user.avatar}
-                    fallback={friend.user.name}
-                    size="sm"
-                  />
-                  <Text style={styles.friendName} numberOfLines={1}>
-                    {friend.user.name}
-                  </Text>
-                </View>
-              ))}
-              {friends.length > 6 && (
-                <View style={styles.friendItem}>
-                  <View style={[styles.moreIndicator, { width: 32, height: 32 }]}>
-                    <Text style={styles.moreText}>+{friends.length - 6}</Text>
+        <View style={styles.profileSection}>
+          <Avatar
+            source={undefined} // AuthUser doesn't have avatar property yet
+            fallback={user.fullName}
+            size="lg"
+            style={styles.avatar}
+          />
+          
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{user.fullName}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+            
+            {(user.followersCount !== undefined || user.followingCount !== undefined) && (
+              <View style={styles.statsContainer}>
+                {user.followersCount !== undefined && (
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>{user.followersCount}</Text>
+                    <Text style={styles.statLabel}>Followers</Text>
                   </View>
-                </View>
-              )}
-            </View>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <Text style={styles.sectionTitle}>Groups</Text>
-          </CardHeader>
-          <CardContent>
-            <Text style={styles.count}>{groups.length} groups</Text>
-            {groups.map(group => (
-              <View key={group.id} style={styles.groupItem}>
-                <View style={styles.groupIndicator} />
-                <Text style={styles.groupName}>{group.name}</Text>
+                )}
+                {user.followingCount !== undefined && (
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>{user.followingCount}</Text>
+                    <Text style={styles.statLabel}>Following</Text>
+                  </View>
+                )}
               </View>
-            ))}
-          </CardContent>
-        </Card>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionDescription}>
+            Manage your Friendlines account settings
+          </Text>
+        </View>
+
+        <View style={styles.actionsContainer}>
+          <Button
+            title="Logout"
+            onPress={handleLogout}
+            variant="outline"
+            fullWidth
+            style={styles.logoutButton}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -99,6 +122,12 @@ const styles = StyleSheet.create({
     ...theme.typography.h2,
     color: theme.colors.text,
     textAlign: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  subtitle: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
@@ -107,18 +136,15 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
   },
-  profileCard: {
-    marginBottom: theme.spacing.lg,
-  },
-  profileHeader: {
-    flexDirection: 'row',
+  profileSection: {
     alignItems: 'center',
+    marginBottom: theme.spacing.xl,
   },
   avatar: {
-    marginRight: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   userInfo: {
-    flex: 1,
+    alignItems: 'center',
   },
   userName: {
     ...theme.typography.h3,
@@ -128,61 +154,53 @@ const styles = StyleSheet.create({
   userEmail: {
     ...theme.typography.body,
     color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.md,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    ...theme.typography.h4,
+    color: theme.colors.primary,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+  section: {
+    marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
     ...theme.typography.h4,
     color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
-  count: {
+  sectionDescription: {
     ...theme.typography.body,
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.sm,
+    lineHeight: 20,
   },
-  friendsList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -theme.spacing.xs,
+  actionsContainer: {
+    marginTop: theme.spacing.lg,
   },
-  friendItem: {
-    alignItems: 'center',
-    marginHorizontal: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
-    width: 60,
+  logoutButton: {
+    marginBottom: theme.spacing.md,
   },
-  friendName: {
-    ...theme.typography.caption,
-    color: theme.colors.text,
-    marginTop: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  moreIndicator: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.full,
-    alignItems: 'center',
+  errorContainer: {
+    flex: 1,
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  moreText: {
-    ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    fontWeight: '600',
-  },
-  groupItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.xs,
+    padding: theme.spacing.md,
   },
-  groupIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.primary,
-    marginRight: theme.spacing.sm,
-  },
-  groupName: {
+  errorText: {
     ...theme.typography.body,
-    color: theme.colors.text,
+    color: theme.colors.error ?? '#ff4444',
+    textAlign: 'center',
   },
 });
 

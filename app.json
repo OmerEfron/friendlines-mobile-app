@@ -28,13 +28,14 @@
       "package": "com.yourcompany.friendlines",
       "versionCode": 1,
       "minSdkVersion": 24,
-      "compileSdkVersion": 35
+      "compileSdkVersion": 35,
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://api.friendlines.com"
+      "apiUrl": "http://192.168.1.132:3000"
     },
     "plugins": [
       [

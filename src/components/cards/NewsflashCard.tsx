@@ -10,9 +10,10 @@ interface NewsflashCardProps {
   newsflash: Newsflash;
 }
 
-const formatTimeAgo = (date: Date): string => {
+const formatTimeAgo = (date: Date | string): string => {
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffInMs = now.getTime() - date.getTime();
+  const diffInMs = now.getTime() - targetDate.getTime();
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
   const diffInHours = Math.floor(diffInMinutes / 60);
   const diffInDays = Math.floor(diffInHours / 24);
@@ -40,6 +41,13 @@ const getSentimentColor = (sentiment?: string): string => {
 };
 
 export const NewsflashCard: React.FC<NewsflashCardProps> = ({ newsflash }) => {
+  // Handle both API format and current format
+  const authorName = newsflash.userFullName || newsflash.author?.name || newsflash.author?.fullName || 'Unknown';
+  const authorAvatar = newsflash.author?.avatar;
+  const headline = newsflash.headline || 'Newsflash Update';
+  const content = newsflash.generatedText || newsflash.transformedText || newsflash.rawText || newsflash.originalText;
+  const timestamp = newsflash.timestamp || newsflash.createdAt;
+
   return (
     <Card
       borderColor={theme.colors.primary}
@@ -50,16 +58,16 @@ export const NewsflashCard: React.FC<NewsflashCardProps> = ({ newsflash }) => {
         <View style={styles.header}>
           <View style={styles.userInfo}>
             <Avatar
-              source={newsflash.author.avatar}
-              fallback={newsflash.author.name}
+              source={authorAvatar}
+              fallback={authorName}
               size="sm"
             />
             <View style={styles.textInfo}>
               <Text style={styles.headline} numberOfLines={2}>
-                {newsflash.headline}
+                {headline}
               </Text>
               <Text style={styles.timeAgo}>
-                {formatTimeAgo(newsflash.createdAt)}
+                {formatTimeAgo(timestamp)}
               </Text>
             </View>
           </View>
@@ -80,7 +88,7 @@ export const NewsflashCard: React.FC<NewsflashCardProps> = ({ newsflash }) => {
       
       <CardContent>
         <Text style={styles.transformedText}>
-          {newsflash.transformedText}
+          {content}
         </Text>
       </CardContent>
     </Card>

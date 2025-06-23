@@ -74,7 +74,7 @@ export const getUsersInGroup = (group: Group): User[] => {
 export const searchNewsflashes = (newsflashes: Newsflash[], query: string): Newsflash[] => {
   const lowerQuery = query.toLowerCase();
   return newsflashes.filter(newsflash =>
-    newsflash.headline.toLowerCase().includes(lowerQuery) ||
+    (newsflash.headline?.toLowerCase().includes(lowerQuery)) ||
     newsflash.transformedText.toLowerCase().includes(lowerQuery) ||
     newsflash.originalText.toLowerCase().includes(lowerQuery) ||
     newsflash.author.name.toLowerCase().includes(lowerQuery)
