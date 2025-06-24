@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader, NewsflashCard } from '../components';
@@ -205,7 +206,7 @@ const SearchScreen: React.FC = () => {
       case 'newsflashes':
         return (
           <FlatList
-            data={results as Newsflash[]}
+            data={filteredResults.newsflashes}
             renderItem={({ item }) => (
               <NewsflashCard 
                 newsflash={item} 
@@ -216,11 +217,10 @@ const SearchScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
           />
         );
-      
       case 'people':
         return (
           <FlatList
-            data={results as User[]}
+            data={filteredResults.people}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.personItem}
@@ -228,31 +228,11 @@ const SearchScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <View style={styles.personInfo}>
-                  <Text style={styles.personName}>{item.fullName || item.name}</Text>
-                  <Text style={styles.personEmail}>{item.email}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-          />
-        );
-      
-      case 'groups':
-        return (
-          <FlatList
-            data={results as Group[]}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.groupItem}
-                onPress={() => handleGroupPress(item)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.groupInfo}>
-                  <Text style={styles.groupName}>{item.name}</Text>
-                  <Text style={styles.groupDescription}>
-                    {item.description || `${item.memberCount || (item.members || []).length} members`}
+                  <Text style={styles.personName}>
+                    {item.name || item.fullName}
+                  </Text>
+                  <Text style={styles.personEmail}>
+                    {item.email}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
@@ -262,34 +242,56 @@ const SearchScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
           />
         );
-      
+      case 'groups':
+        return (
+          <FlatList
+            data={filteredResults.groups}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.groupItem}
+                onPress={() => handleGroupPress(item)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.groupInfo}>
+                  <Text style={styles.groupName}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.groupDescription}>
+                    {item.description}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+          />
+        );
       default:
         return null;
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <NewsHeader 
         title="Search" 
-        subtitle={`${filteredResults.newsflashes.length + filteredResults.people.length + filteredResults.groups.length} results`}
+        subtitle="Find newsflashes, people, and groups"
         showBackButton
         onBackPress={handleBackPress}
         onSearchPress={handleSearchPress}
         onProfilePress={handleProfilePress}
       />
       
-      {/* Search Input */}
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search newsflashes, people, or groups..."
-            placeholderTextColor={theme.colors.textSecondary}
+            placeholder="Search newsflashes, people, groups..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            autoFocus
+            placeholderTextColor={theme.colors.textSecondary}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={handleClearSearch}>
@@ -299,21 +301,18 @@ const SearchScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Filters */}
-      {activeTab === 'newsflashes' && searchQuery.trim() && renderFilters()}
+      {activeTab === 'newsflashes' && renderFilters()}
 
-      {/* Tabs */}
       <View style={styles.tabContainer}>
         {renderTabButton('newsflashes', 'Newsflashes', 'newspaper', filteredResults.newsflashes.length)}
         {renderTabButton('people', 'People', 'people', filteredResults.people.length)}
         {renderTabButton('groups', 'Groups', 'people-circle', filteredResults.groups.length)}
       </View>
 
-      {/* Results */}
       <View style={styles.resultsContainer}>
         {renderSearchResults()}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

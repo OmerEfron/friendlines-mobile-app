@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { 
   NewsHeader, 
@@ -188,7 +189,7 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {showNotification && (
         <NotificationBanner
           type={notificationType}
@@ -230,7 +231,7 @@ const HomeScreen: React.FC = () => {
         onPress={handleCreatePress}
         style={styles.fab}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

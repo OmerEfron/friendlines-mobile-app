@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme, getGradientColors } from '../../styles/theme';
@@ -24,70 +24,65 @@ export const NewsHeader: React.FC<NewsHeaderProps> = ({
   onBackPress,
 }) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <LinearGradient
-        colors={getGradientColors(1)}
-        style={styles.headerGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
-        <View style={styles.header}>
-          <View style={styles.leftSection}>
-            {showBackButton ? (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={onBackPress}
-                accessibilityRole="button"
-                accessibilityLabel="Go back"
-              >
-                <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={onMenuPress}
-                accessibilityRole="button"
-                accessibilityLabel="Menu"
-              >
-                <Ionicons name="menu" size={24} color={theme.colors.white} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.centerSection}>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-          </View>
-
-          <View style={styles.rightSection}>
+    <LinearGradient
+      colors={getGradientColors(1)}
+      style={styles.headerGradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+    >
+      <View style={styles.header}>
+        <View style={styles.leftSection}>
+          {showBackButton ? (
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={onSearchPress}
+              onPress={onBackPress}
               accessibilityRole="button"
-              accessibilityLabel="Search"
+              accessibilityLabel="Go back"
             >
-              <Ionicons name="search" size={24} color={theme.colors.white} />
+              <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
             </TouchableOpacity>
-            
+          ) : (
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={onProfilePress}
+              onPress={onMenuPress}
               accessibilityRole="button"
-              accessibilityLabel="Profile"
+              accessibilityLabel="Menu"
             >
-              <Ionicons name="person-circle" size={28} color={theme.colors.white} />
+              <Ionicons name="menu" size={24} color={theme.colors.white} />
             </TouchableOpacity>
-          </View>
+          )}
         </View>
-      </LinearGradient>
-    </SafeAreaView>
+
+        <View style={styles.centerSection}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        </View>
+
+        <View style={styles.rightSection}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onSearchPress}
+            accessibilityRole="button"
+            accessibilityLabel="Search"
+          >
+            <Ionicons name="search" size={24} color={theme.colors.white} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onProfilePress}
+            accessibilityRole="button"
+            accessibilityLabel="Profile"
+          >
+            <Ionicons name="person-circle" size={28} color={theme.colors.white} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: theme.colors.background,
-  },
   headerGradient: {
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,

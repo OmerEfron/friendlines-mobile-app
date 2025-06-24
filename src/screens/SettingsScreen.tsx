@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader, NotificationBanner } from '../components';
@@ -136,7 +137,7 @@ const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {showNotification && (
         <NotificationBanner
           type="success"
@@ -273,7 +274,7 @@ const SettingsScreen: React.FC = () => {
           />
         </SettingsSection>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

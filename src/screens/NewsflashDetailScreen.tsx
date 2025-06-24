@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader } from '../components';
@@ -93,7 +94,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
 
   if (!newsflash) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <NewsHeader 
           title="Newsflash Detail" 
           subtitle="Not Found"
@@ -107,7 +108,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
             The newsflash you're looking for doesn't exist or has been removed.
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -119,7 +120,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
   const timestamp = newsflash.timestamp || newsflash.createdAt;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <NewsHeader 
         title="Newsflash Detail" 
         subtitle={headline}
@@ -235,7 +236,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

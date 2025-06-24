@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader, FloatingActionButton } from '../components';
@@ -124,7 +125,7 @@ const GroupsScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <NewsHeader 
         title="Group Feeds" 
         subtitle="Newsflashes from your groups"
@@ -184,7 +185,7 @@ const GroupsScreen: React.FC = () => {
         icon="add"
         size="lg"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

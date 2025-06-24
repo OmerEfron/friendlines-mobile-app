@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader, NewsflashCard, FloatingActionButton } from '../components';
@@ -161,7 +162,7 @@ const GroupFeedsScreen: React.FC<GroupFeedsScreenProps> = ({ route }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <NewsHeader 
         title="Group Feeds" 
         subtitle={selectedGroup ? `Newsflashes from ${selectedGroup.name}` : "Select a group to view newsflashes"}
@@ -202,15 +203,15 @@ const GroupFeedsScreen: React.FC<GroupFeedsScreenProps> = ({ route }) => {
                 <Ionicons name="people-circle" size={64} color={theme.colors.textSecondary} />
                 <Text style={styles.emptyTitle}>Select a Group</Text>
                 <Text style={styles.emptySubtext}>
-                  Choose a group from the dropdown above to view their newsflashes
+                  Choose a group to view their newsflashes
                 </Text>
               </>
             ) : (
               <>
                 <Ionicons name="newspaper" size={64} color={theme.colors.textSecondary} />
-                <Text style={styles.emptyTitle}>No Newsflashes Yet</Text>
+                <Text style={styles.emptyTitle}>No Newsflashes</Text>
                 <Text style={styles.emptySubtext}>
-                  {selectedGroup.name} hasn't shared any newsflashes yet
+                  This group doesn't have any newsflashes yet
                 </Text>
               </>
             )}
@@ -223,7 +224,7 @@ const GroupFeedsScreen: React.FC<GroupFeedsScreenProps> = ({ route }) => {
         icon="add"
         size="lg"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

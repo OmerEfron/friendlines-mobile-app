@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { NewsHeader, NewsflashCard, FloatingActionButton } from '../components';
@@ -232,10 +233,10 @@ const UserFeedScreen: React.FC<UserFeedScreenProps> = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <NewsHeader 
-        title="User Feed" 
-        subtitle={activeTab === 'newsflashes' ? 'Your personal newsflashes' : 'Your profile and stats'}
+        title="My Profile" 
+        subtitle="Your personal feed and stats"
         showBackButton
         onBackPress={handleBackPress}
         onSearchPress={handleSearchPress}
@@ -245,19 +246,17 @@ const UserFeedScreen: React.FC<UserFeedScreenProps> = ({ route }) => {
       <View style={styles.tabContainer}>
         {renderTabButton('newsflashes', 'Newsflashes', 'newspaper')}
         {renderTabButton('profile', 'Profile', 'person')}
-        {renderTabButton('stats', 'Stats', 'stats-chart')}
+        {renderTabButton('stats', 'Stats', 'analytics')}
       </View>
 
       {renderContent()}
 
-      {activeTab === 'newsflashes' && (
-        <FloatingActionButton 
-          onPress={handleCreateNewsflash}
-          icon="add"
-          size="lg"
-        />
-      )}
-    </View>
+      <FloatingActionButton 
+        onPress={handleCreateNewsflash}
+        icon="add"
+        size="lg"
+      />
+    </SafeAreaView>
   );
 };
 
