@@ -155,12 +155,6 @@ const TrendingSection: React.FC<TrendingSectionProps> = ({
                       {Math.floor(Math.random() * 1000) + 100}
                     </Text>
                   </View>
-                  <View style={styles.newsflashStats}>
-                    <Ionicons name="heart" size={12} color={theme.colors.white} />
-                    <Text style={styles.newsflashStatText}>
-                      {Math.floor(Math.random() * 50) + 5}
-                    </Text>
-                  </View>
                 </View>
               </LinearGradient>
             </TouchableOpacity>

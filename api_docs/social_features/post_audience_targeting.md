@@ -104,11 +104,7 @@ Posts visible to members of specified groups.
   "audienceType": "friends|friend|groups",
   "targetFriendId": "u987654321",  // Only for friend posts
   "groupIds": ["g123456789"],      // Only for group posts
-  "visibility": "friends_only|friend_only|groups_only",
-  
-  // Social features
-  "likes": [],
-  "likesCount": 0
+  "visibility": "friends_only|friend_only|groups_only"
 }
 ```
 

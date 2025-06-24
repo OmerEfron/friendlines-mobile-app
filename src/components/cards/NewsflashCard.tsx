@@ -74,14 +74,6 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
   onPress,
   showActions = true 
 }) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(newsflash.likesCount || Math.floor(Math.random() * 50));
-
-  const handleLikePress = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-  };
-
   const handleBookmarkPress = () => {
     Alert.alert('Bookmark', 'Bookmark functionality coming soon!');
   };
@@ -167,23 +159,6 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
         {/* Actions */}
         {showActions && (
           <View style={styles.actions}>
-            <TouchableOpacity 
-              style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-              onPress={handleLikePress}
-            >
-              <Ionicons 
-                name={isLiked ? "heart" : "heart-outline"} 
-                size={18} 
-                color={isLiked ? theme.colors.errorLight : theme.colors.white} 
-              />
-              <Text style={[
-                styles.actionText,
-                isLiked && styles.actionTextActive
-              ]}>
-                {likeCount}
-              </Text>
-            </TouchableOpacity>
-
             <View style={styles.spacer} />
 
             <TouchableOpacity style={styles.actionButton}>
@@ -309,21 +284,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     marginRight: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
-  },
-  actionButtonActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  actionText: {
-    ...theme.typography.caption,
-    color: theme.colors.white,
-    marginLeft: theme.spacing.xs,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
-  },
-  actionTextActive: {
-    fontWeight: '600',
   },
   spacer: {
     flex: 1,

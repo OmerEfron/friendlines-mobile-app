@@ -214,12 +214,18 @@ class ApiService {
 
   // Posts API methods (matching the API documentation)
   async getPosts(page: number = 1, limit: number = 20, currentUserId?: string): Promise<Newsflash[]> {
-    let endpoint = `/api/posts?page=${page}&limit=${limit}`;
     if (currentUserId) {
-      endpoint += `&currentUserId=${currentUserId}`;
+      // Use the general posts endpoint with currentUserId as query param and includeFriends=true
+      const endpoint = `/api/posts?page=${page}&limit=${limit}&currentUserId=${currentUserId}&includeFriends=true`;
+      const response = await this.request<Newsflash[]>(endpoint);
+      console.log('response', response.data);
+      return response.data;
+    } else {
+      // Fallback to general posts endpoint for backward compatibility
+      const endpoint = `/api/posts?page=${page}&limit=${limit}`;
+      const response = await this.request<Newsflash[]>(endpoint);
+      return response.data;
     }
-    const response = await this.request<Newsflash[]>(endpoint);
-    return response.data;
   }
 
   async getUserPosts(userId: string, page: number = 1, limit: number = 20, currentUserId?: string): Promise<Newsflash[]> {

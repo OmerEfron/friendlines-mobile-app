@@ -5,9 +5,9 @@ import { apiService, ApiError } from '@/services/api';
 import { useNotification } from './useNotification';
 
 // Fetch newsflashes with API service
-const fetchNewsflashes = async (): Promise<Newsflash[]> => {
+const fetchNewsflashes = async (currentUserId: string): Promise<Newsflash[]> => {
   try {
-    return await apiService.getPosts();
+    return await apiService.getPosts(1, 20, currentUserId);
   } catch (error) {
     console.error('Failed to fetch newsflashes:', error);
     throw error;
@@ -33,8 +33,8 @@ export const useNewsflashes = (currentUser: AuthUser): UseNewsflashesReturn => {
     error,
     refetch
   } = useQuery({
-    queryKey: ['newsflashes'],
-    queryFn: fetchNewsflashes,
+    queryKey: ['newsflashes', currentUser.id],
+    queryFn: () => fetchNewsflashes(currentUser.id),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -49,13 +49,25 @@ export const useNewsflashes = (currentUser: AuthUser): UseNewsflashesReturn => {
         groups: data.groups,
         groupIds: data.groups, // API uses groupIds instead of groups
         userId: currentUser.id, // API requires userId
+        generate: data.generate, // Pass through the generate parameter
+        audienceType: data.audienceType,
+        targetFriendId: data.targetFriendId || null, // Explicitly set to null if not provided
+        ...(data.tone && { tone: data.tone }),
+        ...(data.length && { length: data.length }),
+        ...(data.temperature && { temperature: data.temperature }),
       };
       
-      return await apiService.createPost(postData);
+      console.log('📝 Creating post with data:', JSON.stringify(postData, null, 2));
+      
+      const response = await apiService.createPost(postData);
+      
+      console.log('✅ Create post API response:', JSON.stringify(response, null, 2));
+      
+      return response;
     },
     onSuccess: (newPost) => {
       // Update query cache by adding new post to the beginning
-      queryClient.setQueryData(['newsflashes'], (old: Newsflash[] = []) => [
+      queryClient.setQueryData(['newsflashes', currentUser.id], (old: Newsflash[] = []) => [
         newPost,
         ...old
       ]);

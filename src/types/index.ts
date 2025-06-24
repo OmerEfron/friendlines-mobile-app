@@ -60,26 +60,29 @@ export interface GroupsResponse {
 
 export interface Newsflash {
   id: string;
-  originalText: string;
-  transformedText: string;
+  originalText?: string;
+  transformedText?: string;
   generatedText?: string;
   headline?: string;
   rawText?: string;
-  author: User;
+  author?: User;
   userId?: string;
   userFullName?: string;
-  recipients: string[];
-  groups: string[];
+  recipients?: string[];
+  groups?: string[];
   groupIds?: string[];
-  createdAt: Date;
+  createdAt?: Date;
   timestamp?: string;
   updatedAt?: string;
   sentiment?: 'playful' | 'proud' | 'nostalgic' | 'neutral';
-  likesCount?: number;
   // Post audience targeting fields
-  audienceType?: 'friends' | 'friend' | 'groups';
-  targetFriendId?: string;
+  audienceType?: 'friends' | 'friend' | 'groups' | 'public';
+  targetFriendId?: string | null;
   visibility?: 'friends_only' | 'friend_only' | 'groups_only' | 'public';
+  // API response fields
+  likesCount?: number;
+  commentsCount?: number;
+  sharesCount?: number;
 }
 
 export interface CreateNewsflashData {
@@ -91,10 +94,12 @@ export interface CreateNewsflashData {
   userId?: string;
   // New audience targeting fields
   audienceType?: 'friends' | 'friend' | 'groups';
-  targetFriendId?: string;
+  targetFriendId?: string | null;
   tone?: string;
   length?: 'short' | 'long';
   temperature?: number;
+  // Generate field for controlling newsflash generation
+  generate?: boolean;
 }
 
 // Authentication types
@@ -127,7 +132,9 @@ export type RootStackParamList = {
   NewsflashDetail: { newsflashId: string };
   UserProfile: { userId: string };
   Settings: undefined;
+  NotificationTest: undefined;
   Login: undefined;
+  Register: undefined;
   FriendProfile: { userId: string };
   GroupDetail: { groupId: string };
   CreateGroup: undefined;

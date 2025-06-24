@@ -77,11 +77,6 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
     navigation.goBack();
   };
 
-  const handleLikePress = () => {
-    // TODO: Implement like functionality
-    console.log('Like newsflash:', newsflashId);
-  };
-
   if (!newsflash) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
@@ -192,16 +187,6 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
 
         {/* Action Buttons */}
         <View style={styles.actionSection}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleLikePress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="heart-outline" size={24} color={theme.colors.textSecondary} />
-            <Text style={styles.actionText}>
-              {newsflash.likesCount || 0} Likes
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -300,16 +285,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: theme.spacing.sm,
-  },
-  actionText: {
-    ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    marginLeft: theme.spacing.xs,
   },
   errorContainer: {
     flex: 1,

@@ -37,7 +37,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://friendlines-production.up.railway.app",
+      "apiUrl": "http://192.168.1.132:3000",
       "eas": {
         "projectId": "1fe3f805-6b25-4921-aa3e-39687583f93e"
       }

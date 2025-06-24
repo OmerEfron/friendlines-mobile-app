@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import { NewsHeader, NotificationBanner } from '../components';
 import { theme } from '../styles/theme';
 import { useAppContext } from '../contexts/AppContext';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 interface SettingsSectionProps {
   title: string;
@@ -64,11 +66,13 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user, logout } = useAppContext();
+  const { registerForPushNotifications } = usePushNotifications(user?.id);
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
+  const [isTestingNotification, setIsTestingNotification] = useState(false);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -136,6 +140,64 @@ const SettingsScreen: React.FC = () => {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
+  const handleTestNotification = async () => {
+    setIsTestingNotification(true);
+    try {
+      // First, ensure we have permissions
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Please enable notification permissions to test notifications.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Enable', 
+              onPress: async () => {
+                await registerForPushNotifications();
+                // Try the test again after registration
+                setTimeout(handleTestNotification, 1000);
+              }
+            }
+          ]
+        );
+        return;
+      }
+
+      // Send a test notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Test Notification',
+          body: 'This is a test notification from Friendlines! 🎉',
+          data: {
+            type: 'test',
+            timestamp: new Date().toISOString(),
+          },
+        },
+        trigger: null, // Send immediately
+      });
+
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      Alert.alert('Error', 'Failed to send test notification. Please try again.');
+    } finally {
+      setIsTestingNotification(false);
+    }
+  };
+
+  const handleRegisterNotifications = async () => {
+    try {
+      await registerForPushNotifications();
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } catch (error) {
+      console.error('Error registering notifications:', error);
+      Alert.alert('Error', 'Failed to register notifications. Please try again.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {showNotification && (
@@ -193,6 +255,34 @@ const SettingsScreen: React.FC = () => {
               />
             }
             showChevron={false}
+          />
+          
+          <SettingsItem
+            title="Register for Notifications"
+            subtitle="Set up push notification permissions"
+            icon="notifications-circle"
+            onPress={handleRegisterNotifications}
+          />
+
+          <SettingsItem
+            title="Test Notification"
+            subtitle="Send a test notification to verify setup"
+            icon="flash"
+            onPress={handleTestNotification}
+            rightComponent={
+              isTestingNotification ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>Testing...</Text>
+                </View>
+              ) : undefined
+            }
+          />
+
+          <SettingsItem
+            title="Notification Testing"
+            subtitle="Comprehensive notification testing tools"
+            icon="flask"
+            onPress={() => navigation.navigate('NotificationTest' as never)}
           />
           
           <SettingsItem
@@ -341,6 +431,17 @@ const styles = StyleSheet.create({
   settingsItemRight: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.sm,
+  },
+  loadingText: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    fontStyle: 'italic',
   },
 });
 

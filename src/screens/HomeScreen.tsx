@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { 
@@ -27,6 +27,20 @@ const HomeScreen: React.FC = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationType, setNotificationType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   
+  // Debug user context
+  console.log('👤 HomeScreen - User context:', user?.id, user?.fullName);
+  
+  // Safety check - if no user, show loading or error state
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.contentContainer}>
+          <Text style={styles.title}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const { newsflashes = [] } = useNewsflashes(user!);
 
   // Filter newsflashes based on selected filter
@@ -34,7 +48,10 @@ const HomeScreen: React.FC = () => {
     if (selectedFilter === 'all') {
       return newsflashes;
     }
-    return newsflashes.filter(newsflash => newsflash.sentiment === selectedFilter);
+    
+    // For now, return all newsflashes since sentiment field might not be available
+    // TODO: Implement proper sentiment filtering when API provides sentiment data
+    return newsflashes;
   }, [newsflashes, selectedFilter]);
 
   // Generate trending topics from newsflashes
@@ -105,13 +122,6 @@ const HomeScreen: React.FC = () => {
     // In a real app, you'd pass the topic as a parameter
   };
 
-  const handleLike = (newsflash: Newsflash) => {
-    // Show success notification
-    setNotificationType('success');
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
-  };
-
   const handleBookmark = (newsflash: Newsflash) => {
     // Show success notification
     setNotificationType('success');
@@ -135,7 +145,6 @@ const HomeScreen: React.FC = () => {
     <AnimatedNewsflashCard 
       newsflash={item} 
       onPress={() => handleNewsflashPress(item)}
-      onLike={handleLike}
       onBookmark={handleBookmark}
       index={index}
     />
@@ -209,12 +218,16 @@ const HomeScreen: React.FC = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <EnhancedRefreshControl
+          <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            title="Pull to refresh"
-            subtitle="Release to update your feed"
           />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No newsflashes found</Text>
+            <Text style={styles.emptySubtext}>Pull to refresh or create your first newsflash!</Text>
+          </View>
         }
       />
       
@@ -239,6 +252,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: theme.spacing.lg,
     right: theme.spacing.lg,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  emptySubtext: {
+    fontSize: 16,
+    color: theme.colors.textSecondary,
   },
 });
 

@@ -12,6 +12,7 @@ import HomeScreen from '../screens/HomeScreen';
 import CreateScreen from '../screens/CreateScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import GroupsScreen from '../screens/GroupsScreen';
 import GroupFeedsScreen from '../screens/GroupFeedsScreen';
@@ -20,6 +21,7 @@ import NewsflashDetailScreen from '../screens/NewsflashDetailScreen';
 import MenuScreen from '../screens/MenuScreen';
 import SearchScreen from '../screens/SearchScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import NotificationTestScreen from '../screens/NotificationTestScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -87,6 +89,13 @@ const AuthenticatedNavigator: React.FC = () => {
         }}
       />
       <Stack.Screen 
+        name="NotificationTest" 
+        component={NotificationTestScreen}
+        options={{ 
+          title: 'Notification Testing',
+        }}
+      />
+      <Stack.Screen 
         name="FriendProfile" 
         component={ProfileScreen}
         options={{ 
@@ -140,6 +149,7 @@ const UnauthenticatedNavigator: React.FC = () => {
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>
   );
 };

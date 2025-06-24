@@ -2,6 +2,7 @@
 
 export * from './storage';
 export * from './data';
+export * from './notificationTest';
 
 // Date formatting utilities
 export const formatDate = (date: Date): string => {

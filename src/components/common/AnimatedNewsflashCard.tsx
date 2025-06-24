@@ -9,7 +9,6 @@ import type { Newsflash } from '../../types';
 interface AnimatedNewsflashCardProps {
   newsflash: Newsflash;
   onPress?: () => void;
-  onLike?: (newsflash: Newsflash) => void;
   onBookmark?: (newsflash: Newsflash) => void;
   showActions?: boolean;
   index?: number;
@@ -18,18 +17,14 @@ interface AnimatedNewsflashCardProps {
 const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({ 
   newsflash, 
   onPress,
-  onLike,
   onBookmark,
   showActions = true,
   index = 0
 }) => {
-  const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [likeCount, setLikeCount] = useState(newsflash.likesCount || Math.floor(Math.random() * 50));
 
   // Animation values
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const likeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -80,28 +75,6 @@ const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({
       friction: 5,
       useNativeDriver: true,
     }).start();
-  };
-
-  const handleLikePress = () => {
-    const newLiked = !isLiked;
-    setIsLiked(newLiked);
-    setLikeCount(prev => newLiked ? prev + 1 : prev - 1);
-    
-    // Animate like button
-    Animated.sequence([
-      Animated.timing(likeAnim, {
-        toValue: 1.3,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(likeAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    onLike?.(newsflash);
   };
 
   const handleBookmarkPress = () => {
@@ -208,25 +181,6 @@ const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({
         {/* Actions */}
         {showActions && (
           <View style={styles.actions}>
-            <Animated.View style={{ transform: [{ scale: likeAnim }] }}>
-              <TouchableOpacity 
-                style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-                onPress={handleLikePress}
-              >
-                <Ionicons 
-                  name={isLiked ? "heart" : "heart-outline"} 
-                  size={18} 
-                  color={isLiked ? theme.colors.error : theme.colors.textSecondary} 
-                />
-                <Text style={[
-                  styles.actionText,
-                  isLiked && styles.actionTextActive
-                ]}>
-                  {likeCount}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-
             <View style={styles.spacer} />
 
             <TouchableOpacity style={styles.actionButton}>
@@ -323,19 +277,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     marginRight: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
-  },
-  actionButtonActive: {
-    backgroundColor: theme.colors.primary + '10',
-  },
-  actionText: {
-    ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    marginLeft: theme.spacing.xs,
-    fontWeight: '500',
-  },
-  actionTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '600',
   },
   spacer: {
     flex: 1,

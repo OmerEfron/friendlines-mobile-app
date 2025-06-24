@@ -8,8 +8,8 @@ import * as notificationHook from '../../hooks/useNotification';
 // Mock the API service
 jest.mock('../../services/api', () => ({
   apiService: {
-    getNewsflashes: jest.fn(),
-    transformText: jest.fn(),
+    getPosts: jest.fn(),
+    createPost: jest.fn(),
   },
   ApiError: jest.fn(),
 }));
@@ -66,7 +66,7 @@ describe('useNewsflashes Hook', () => {
     
     jest.clearAllMocks();
     
-    (notificationHook.useNotification as jest.Mock).mockReturnValue(mockNotification);
+    (notificationHook.useNotification as any).mockReturnValue(mockNotification);
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -77,7 +77,7 @@ describe('useNewsflashes Hook', () => {
 
   describe('Fetching Newsflashes', () => {
     it('fetches newsflashes successfully', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([mockNewsflash]);
+      (apiService.getPosts as any).mockResolvedValue([mockNewsflash]);
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -92,12 +92,12 @@ describe('useNewsflashes Hook', () => {
 
       expect(result.current.newsflashes).toEqual([mockNewsflash]);
       expect(result.current.error).toBe(null);
-      expect(apiService.getNewsflashes).toHaveBeenCalledWith(mockUser.id);
+      expect(apiService.getPosts).toHaveBeenCalledWith(1, 20, mockUser.id);
     });
 
     it('handles fetch error gracefully', async () => {
       const mockError = new Error('Network error');
-      (apiService.getNewsflashes as jest.Mock).mockRejectedValue(mockError);
+      (apiService.getPosts as any).mockRejectedValue(mockError);
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -114,7 +114,7 @@ describe('useNewsflashes Hook', () => {
 
     it('returns empty array when API is not available', async () => {
       const apiError = { statusCode: 0 };
-      (apiService.getNewsflashes as jest.Mock).mockRejectedValue(apiError);
+      (apiService.getPosts as any).mockRejectedValue(apiError);
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -138,8 +138,9 @@ describe('useNewsflashes Hook', () => {
   describe('Creating Newsflashes', () => {
 
     it('creates newsflash successfully with API', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
-      (apiService.transformText as jest.Mock).mockResolvedValue({
+      (apiService.getPosts as any).mockResolvedValue([]);
+      (apiService.createPost as any).mockResolvedValue({
+        id: 'new-post-1',
         headline: 'Career Milestone Achieved',
         transformedText: 'Individual successfully obtained new employment',
         sentiment: 'proud',
@@ -156,7 +157,7 @@ describe('useNewsflashes Hook', () => {
 
       await result.current.createNewsflash(createData);
 
-      expect(apiService.transformText).toHaveBeenCalledWith(createData.originalText);
+      expect(apiService.createPost).toHaveBeenCalled();
       expect(mockNotification.showSuccess).toHaveBeenCalledWith(
         'Newsflash Created! 🎉',
         'Your update has been transformed and shared.'
@@ -164,8 +165,8 @@ describe('useNewsflashes Hook', () => {
     });
 
     it('creates newsflash with mock transformation when API fails', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
-      (apiService.transformText as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (apiService.getPosts as any).mockResolvedValue([]);
+      (apiService.createPost as any).mockRejectedValue(new Error('API Error'));
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -185,8 +186,8 @@ describe('useNewsflashes Hook', () => {
     });
 
     it('shows error when creation fails completely', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
-      (apiService.transformText as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (apiService.getPosts as any).mockResolvedValue([]);
+      (apiService.createPost as any).mockRejectedValue(new Error('API Error'));
 
       // Mock generateId to throw an error to simulate complete failure
       const mockGenerateId = require('../../utils').generateId;
@@ -209,8 +210,8 @@ describe('useNewsflashes Hook', () => {
 
   describe('Mock Transformation Logic', () => {
     it('transforms marathon text correctly', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
-      (apiService.transformText as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (apiService.getPosts as any).mockResolvedValue([]);
+      (apiService.createPost as any).mockRejectedValue(new Error('API Error'));
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -233,8 +234,8 @@ describe('useNewsflashes Hook', () => {
     });
 
     it('transforms job text correctly', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
-      (apiService.transformText as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (apiService.getPosts as any).mockResolvedValue([]);
+      (apiService.createPost as any).mockRejectedValue(new Error('API Error'));
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),
@@ -259,8 +260,9 @@ describe('useNewsflashes Hook', () => {
 
   describe('Cache Management', () => {
     it('updates cache correctly when creating newsflash', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([mockNewsflash]);
-      (apiService.transformText as jest.Mock).mockResolvedValue({
+      (apiService.getPosts as any).mockResolvedValue([mockNewsflash]);
+      (apiService.createPost as any).mockResolvedValue({
+        id: 'new-post-1',
         headline: 'New Achievement',
         transformedText: 'Someone accomplished something',
         sentiment: 'neutral',
@@ -285,7 +287,7 @@ describe('useNewsflashes Hook', () => {
 
   describe('Refetch Functionality', () => {
     it('provides refetch function', async () => {
-      (apiService.getNewsflashes as jest.Mock).mockResolvedValue([]);
+      (apiService.getPosts as any).mockResolvedValue([]);
 
       const { result } = renderHook(
         () => useNewsflashes(mockUser),

@@ -105,7 +105,6 @@
 The Push Notifications architecture enables real-time notifications for Friendlines users when:
 - ✅ Someone they follow creates a new post (IMPLEMENTED)
 - A post is shared to a group they belong to (future extension)
-- Someone likes their post (future extension)
 
 **Current Status**: Core push notification functionality is fully implemented and integrated.
 
@@ -330,6 +329,5 @@ describe('Notification Flow', () => {
    - Engagement optimization
 
 3. **Additional Triggers**
-   - Like notifications
    - Mention notifications
    - Group invites 
