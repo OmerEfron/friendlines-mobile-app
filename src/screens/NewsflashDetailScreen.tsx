@@ -77,19 +77,9 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
     navigation.goBack();
   };
 
-  const handleSharePress = () => {
-    // TODO: Implement share functionality
-    console.log('Share newsflash:', newsflashId);
-  };
-
   const handleLikePress = () => {
     // TODO: Implement like functionality
     console.log('Like newsflash:', newsflashId);
-  };
-
-  const handleCommentPress = () => {
-    // TODO: Implement comment functionality
-    console.log('Comment on newsflash:', newsflashId);
   };
 
   if (!newsflash) {
@@ -210,28 +200,6 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
             <Ionicons name="heart-outline" size={24} color={theme.colors.textSecondary} />
             <Text style={styles.actionText}>
               {newsflash.likesCount || 0} Likes
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleCommentPress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chatbubble-outline" size={24} color={theme.colors.textSecondary} />
-            <Text style={styles.actionText}>
-              {newsflash.commentsCount || 0} Comments
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleSharePress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="share-outline" size={24} color={theme.colors.textSecondary} />
-            <Text style={styles.actionText}>
-              {newsflash.sharesCount || 0} Shares
             </Text>
           </TouchableOpacity>
         </View>

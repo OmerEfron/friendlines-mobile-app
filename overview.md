@@ -7,7 +7,6 @@
 ### Key Features
 - **AI-Powered Transformation**: Convert personal updates into newspaper-style headlines and articles
 - **Sentiment Analysis**: Automatically categorize posts (playful, proud, nostalgic, neutral)
-- **Social Sharing**: Share with individual friends, groups, or all friends
 - **Real-time Feed**: Browse transformed updates from your social circle
 - **Cross-Platform**: Native iOS and Android experience with web support
 

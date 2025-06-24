@@ -108,10 +108,7 @@ Posts visible to members of specified groups.
   
   // Social features
   "likes": [],
-  "comments": [],
-  "likesCount": 0,
-  "commentsCount": 0,
-  "sharesCount": 0
+  "likesCount": 0
 }
 ```
 

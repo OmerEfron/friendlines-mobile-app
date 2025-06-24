@@ -112,13 +112,6 @@ const HomeScreen: React.FC = () => {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  const handleShare = (newsflash: Newsflash) => {
-    // Show info notification
-    setNotificationType('info');
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
-  };
-
   const handleBookmark = (newsflash: Newsflash) => {
     // Show success notification
     setNotificationType('success');
@@ -143,7 +136,6 @@ const HomeScreen: React.FC = () => {
       newsflash={item} 
       onPress={() => handleNewsflashPress(item)}
       onLike={handleLike}
-      onShare={handleShare}
       onBookmark={handleBookmark}
       index={index}
     />

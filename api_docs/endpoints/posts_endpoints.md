@@ -31,9 +31,7 @@ Get all posts (newsflashes) with pagination and audience filtering.
       "targetFriendId": null,
       "groupIds": [],
       "visibility": "friends_only",
-      "likesCount": 0,
-      "commentsCount": 0,
-      "sharesCount": 0
+      "likesCount": 0
     }
   ],
   "pagination": {
@@ -82,9 +80,7 @@ Get posts by a specific user with pagination and audience filtering.
       "targetFriendId": null,
       "groupIds": [],
       "visibility": "friends_only",
-      "likesCount": 0,
-      "commentsCount": 0,
-      "sharesCount": 0
+      "likesCount": 0
     }
   ],
   "user": {
@@ -172,9 +168,7 @@ Create a new post with automatic newsflash generation and audience targeting.
     "targetFriendId": null,
     "groupIds": [],
     "visibility": "friends_only",
-    "likesCount": 0,
-    "commentsCount": 0,
-    "sharesCount": 0
+    "likesCount": 0
   },
   "timestamp": "2025-06-14T18:00:00.000Z"
 }
@@ -276,9 +270,7 @@ Get a specific post by ID.
     "timestamp": "2025-06-14T18:00:00.000Z",
     "createdAt": "2025-06-14T18:00:00.000Z",
     "updatedAt": "2025-06-14T18:00:00.000Z",
-    "likesCount": 0,
-    "commentsCount": 0,
-    "sharesCount": 0
+    "likesCount": 0
   },
   "timestamp": "2025-06-14T18:00:00.000Z"
 }
@@ -321,9 +313,7 @@ Update an existing post (regenerates newsflash).
     "timestamp": "2025-06-14T18:40:00.000Z",
     "createdAt": "2025-06-14T18:40:00.000Z",
     "updatedAt": "2025-06-14T18:40:00.000Z",
-    "likesCount": 0,
-    "commentsCount": 0,
-    "sharesCount": 0
+    "likesCount": 0
   },
   "timestamp": "2025-06-14T18:40:00.000Z"
 }

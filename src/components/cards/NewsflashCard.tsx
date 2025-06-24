@@ -75,25 +75,11 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
   showActions = true 
 }) => {
   const [isLiked, setIsLiked] = useState(false);
-  const [isShared, setIsShared] = useState(false);
   const [likeCount, setLikeCount] = useState(newsflash.likesCount || Math.floor(Math.random() * 50));
-  const [commentCount, setCommentCount] = useState(newsflash.commentsCount || Math.floor(Math.random() * 20));
-  const [shareCount, setShareCount] = useState(newsflash.sharesCount || Math.floor(Math.random() * 10));
 
   const handleLikePress = () => {
     setIsLiked(!isLiked);
     setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-  };
-
-  const handleCommentPress = () => {
-    // Navigate to comments or show comment modal
-    Alert.alert('Comments', 'Comment functionality coming soon!');
-  };
-
-  const handleSharePress = () => {
-    setIsShared(!isShared);
-    setShareCount(prev => isShared ? prev - 1 : prev + 1);
-    Alert.alert('Share', 'Share functionality coming soon!');
   };
 
   const handleBookmarkPress = () => {
@@ -195,31 +181,6 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
                 isLiked && styles.actionTextActive
               ]}>
                 {likeCount}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleCommentPress}
-            >
-              <Ionicons name="chatbubble-outline" size={18} color={theme.colors.white} />
-              <Text style={styles.actionText}>{commentCount}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.actionButton, isShared && styles.actionButtonActive]}
-              onPress={handleSharePress}
-            >
-              <Ionicons 
-                name={isShared ? "share" : "share-outline"} 
-                size={18} 
-                color={isShared ? theme.colors.accent2 : theme.colors.white} 
-              />
-              <Text style={[
-                styles.actionText,
-                isShared && styles.actionTextActive
-              ]}>
-                {shareCount}
               </Text>
             </TouchableOpacity>
 

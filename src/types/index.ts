@@ -76,8 +76,6 @@ export interface Newsflash {
   updatedAt?: string;
   sentiment?: 'playful' | 'proud' | 'nostalgic' | 'neutral';
   likesCount?: number;
-  commentsCount?: number;
-  sharesCount?: number;
   // Post audience targeting fields
   audienceType?: 'friends' | 'friend' | 'groups';
   targetFriendId?: string;

@@ -10,7 +10,6 @@ interface AnimatedNewsflashCardProps {
   newsflash: Newsflash;
   onPress?: () => void;
   onLike?: (newsflash: Newsflash) => void;
-  onShare?: (newsflash: Newsflash) => void;
   onBookmark?: (newsflash: Newsflash) => void;
   showActions?: boolean;
   index?: number;
@@ -20,17 +19,13 @@ const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({
   newsflash, 
   onPress,
   onLike,
-  onShare,
   onBookmark,
   showActions = true,
   index = 0
 }) => {
   const [isLiked, setIsLiked] = useState(false);
-  const [isShared, setIsShared] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likeCount, setLikeCount] = useState(newsflash.likesCount || Math.floor(Math.random() * 50));
-  const [commentCount, setCommentCount] = useState(newsflash.commentsCount || Math.floor(Math.random() * 20));
-  const [shareCount, setShareCount] = useState(newsflash.sharesCount || Math.floor(Math.random() * 10));
 
   // Animation values
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -107,18 +102,6 @@ const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({
     ]).start();
 
     onLike?.(newsflash);
-  };
-
-  const handleCommentPress = () => {
-    Alert.alert('Comments', 'Comment functionality coming soon!');
-  };
-
-  const handleSharePress = () => {
-    const newShared = !isShared;
-    setIsShared(newShared);
-    setShareCount(prev => newShared ? prev + 1 : prev - 1);
-    onShare?.(newsflash);
-    Alert.alert('Share', 'Share functionality coming soon!');
   };
 
   const handleBookmarkPress = () => {
@@ -243,31 +226,6 @@ const AnimatedNewsflashCard: React.FC<AnimatedNewsflashCardProps> = ({
                 </Text>
               </TouchableOpacity>
             </Animated.View>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleCommentPress}
-            >
-              <Ionicons name="chatbubble-outline" size={18} color={theme.colors.textSecondary} />
-              <Text style={styles.actionText}>{commentCount}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.actionButton, isShared && styles.actionButtonActive]}
-              onPress={handleSharePress}
-            >
-              <Ionicons 
-                name={isShared ? "share" : "share-outline"} 
-                size={18} 
-                color={isShared ? theme.colors.newsAccent : theme.colors.textSecondary} 
-              />
-              <Text style={[
-                styles.actionText,
-                isShared && styles.actionTextActive
-              ]}>
-                {shareCount}
-              </Text>
-            </TouchableOpacity>
 
             <View style={styles.spacer} />
 
