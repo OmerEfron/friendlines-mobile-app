@@ -1,298 +1,190 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { NewsHeader, FloatingActionButton } from '../components';
 import { theme } from '../styles/theme';
 import { Avatar } from '../components/common/Avatar';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { useAppContext } from '../contexts/AppContext';
 import { useGroups } from '../hooks/useGroups';
-import type { Group } from '../types';
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import type { User, Group } from '../types';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '../types';
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 type TabType = 'owned' | 'member' | 'invited';
 
 const GroupsScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const { user } = useAppContext();
-  const [activeTab, setActiveTab] = useState<TabType>('owned');
-  const [refreshing, setRefreshing] = useState(false);
-
-  const {
-    ownedGroups,
-    memberGroups,
-    invitedGroups,
-    isLoading,
-    error,
-    createGroup,
-    acceptGroupInvitation,
-    leaveGroup,
-    refetchGroups,
+  const [activeTab, setActiveTab] = useState<TabType>('member');
+  const { 
+    ownedGroups, 
+    memberGroups, 
+    invitedGroups, 
+    isLoading, 
+    error, 
+    refetchGroups 
   } = useGroups(user?.id || '');
+  const { registerForPushNotifications } = usePushNotifications(user?.id);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      refetchGroups();
-    } catch (error) {
-      console.error('Error refreshing groups:', error);
-    } finally {
-      setRefreshing(false);
-    }
+  useEffect(() => {
+    registerForPushNotifications();
+  }, [registerForPushNotifications]);
+
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+
+  const handleSearchPress = () => {
+    navigation.navigate('Search');
+  };
+
+  const handleProfilePress = () => {
+    navigation.navigate('UserFeed', { userId: user?.id });
   };
 
   const handleCreateGroup = () => {
-    Alert.prompt(
-      'Create Group',
-      'Enter group name:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Create',
-          onPress: async (groupName) => {
-            if (groupName && groupName.trim()) {
-              try {
-                await createGroup({ name: groupName.trim() });
-              } catch (error) {
-                console.error('Error creating group:', error);
-              }
-            }
-          },
-        },
-      ],
-      'plain-text'
-    );
+    navigation.navigate('CreateGroup');
   };
 
-  const handleAcceptInvitation = async (groupId: string) => {
-    try {
-      await acceptGroupInvitation(groupId);
-    } catch (error) {
-      console.error('Error accepting group invitation:', error);
-    }
+  const handleGroupPress = (group: Group) => {
+    navigation.navigate('GroupDetail', { groupId: group.id });
   };
 
-  const handleLeaveGroup = (group: Group) => {
-    Alert.alert(
-      'Leave Group',
-      `Are you sure you want to leave "${group.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Leave',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await leaveGroup(group.id);
-            } catch (error) {
-              console.error('Error leaving group:', error);
-            }
-          },
-        },
-      ]
-    );
+  const handleRefresh = () => {
+    refetchGroups();
   };
 
-  const renderOwnedGroupItem = ({ item }: { item: Group }) => (
-    <View style={styles.groupItem}>
-      <View style={styles.groupInfo}>
-        <View style={styles.groupIcon}>
-          <Ionicons name="people" size={24} color={theme.colors.primary} />
-        </View>
-        <View style={styles.groupDetails}>
-          <Text style={styles.groupName}>{item.name}</Text>
-          {item.description && (
-            <Text style={styles.groupDescription}>{item.description}</Text>
-          )}
-          <Text style={styles.memberCount}>
-            {item.memberCount || item.members.length} members
-          </Text>
-        </View>
-      </View>
-      <View style={styles.ownerBadge}>
-        <Badge variant="secondary" size="sm">
-          Owner
-        </Badge>
-      </View>
-    </View>
-  );
-
-  const renderMemberGroupItem = ({ item }: { item: Group }) => (
-    <View style={styles.groupItem}>
-      <View style={styles.groupInfo}>
-        <View style={styles.groupIcon}>
-          <Ionicons name="people" size={24} color={theme.colors.primary} />
-        </View>
-        <View style={styles.groupDetails}>
-          <Text style={styles.groupName}>{item.name}</Text>
-          {item.description && (
-            <Text style={styles.groupDescription}>{item.description}</Text>
-          )}
-          <Text style={styles.memberCount}>
-            {item.memberCount || item.members.length} members
-          </Text>
-        </View>
-      </View>
-      <Button
-        title="Leave"
-        onPress={() => handleLeaveGroup(item)}
-        variant="secondary"
-        style={styles.actionButton}
-      />
-    </View>
-  );
-
-  const renderInvitedGroupItem = ({ item }: { item: Group }) => (
-    <View style={styles.groupItem}>
-      <View style={styles.groupInfo}>
-        <View style={styles.groupIcon}>
-          <Ionicons name="people" size={24} color={theme.colors.secondary} />
-        </View>
-        <View style={styles.groupDetails}>
-          <Text style={styles.groupName}>{item.name}</Text>
-          {item.description && (
-            <Text style={styles.groupDescription}>{item.description}</Text>
-          )}
-          <Text style={styles.memberCount}>
-            {item.memberCount || item.members.length} members
-          </Text>
-        </View>
-      </View>
-      <View style={styles.inviteActions}>
-        <Button
-          title="Accept"
-          onPress={() => handleAcceptInvitation(item.id)}
-          variant="primary"
-          style={styles.acceptButton}
-        />
-      </View>
-    </View>
-  );
-
-  const renderTabContent = () => {
-    let data: Group[] = [];
-    let renderItem: ({ item }: { item: Group }) => React.ReactElement;
-
+  const getActiveGroups = () => {
     switch (activeTab) {
       case 'owned':
-        data = ownedGroups;
-        renderItem = renderOwnedGroupItem;
-        break;
+        return ownedGroups;
       case 'member':
-        data = memberGroups;
-        renderItem = renderMemberGroupItem;
-        break;
+        return memberGroups;
       case 'invited':
-        data = invitedGroups;
-        renderItem = renderInvitedGroupItem;
-        break;
+        return invitedGroups;
+      default:
+        return [];
     }
+  };
 
-    if (isLoading && data.length === 0) {
-      return (
-        <View style={styles.centerContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
+  const renderGroupItem = ({ item }: { item: Group }) => (
+    <TouchableOpacity
+      style={styles.groupItem}
+      onPress={() => handleGroupPress(item)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.groupHeader}>
+        <Avatar
+          source={undefined}
+          fallback={item.name}
+          size="md"
+        />
+        <View style={styles.groupInfo}>
+          <Text style={styles.groupName}>{item.name}</Text>
+          <Text style={styles.groupDescription}>
+            {item.description || `${item.memberCount || item.members.length} members`}
+          </Text>
         </View>
-      );
-    }
-
-    if (error) {
-      return (
-        <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Error loading groups</Text>
-          <Button title="Retry" onPress={handleRefresh} />
-        </View>
-      );
-    }
-
-    if (data.length === 0) {
-      const emptyMessage = activeTab === 'owned' 
-        ? 'No groups created yet' 
-        : activeTab === 'member' 
-        ? 'Not a member of any groups' 
-        : 'No group invitations';
-      
-      return (
-        <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>{emptyMessage}</Text>
-          {activeTab === 'owned' && (
-            <Button
-              title="Create Your First Group"
-              onPress={handleCreateGroup}
-              style={styles.createButton}
-            />
+        <View style={styles.groupActions}>
+          {activeTab === 'invited' && (
+            <Badge variant="secondary" size="sm" style={styles.inviteBadge}>
+              Invited
+            </Badge>
           )}
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
         </View>
-      );
-    }
+      </View>
+    </TouchableOpacity>
+  );
 
-    return (
+  const renderTabButton = (tab: TabType, label: string, icon: string) => (
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
+      onPress={() => setActiveTab(tab)}
+      activeOpacity={0.7}
+    >
+      <Ionicons 
+        name={icon as any} 
+        size={20} 
+        color={activeTab === tab ? theme.colors.primary : theme.colors.textSecondary} 
+      />
+      <Text style={[
+        styles.tabLabel,
+        activeTab === tab && styles.activeTabLabel
+      ]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <NewsHeader 
+        title="Group Feeds" 
+        subtitle="Newsflashes from your groups"
+        showBackButton
+        onBackPress={handleBackPress}
+        onSearchPress={handleSearchPress}
+        onProfilePress={handleProfilePress}
+      />
+      
+      <View style={styles.tabContainer}>
+        {renderTabButton('member', 'Member', 'people')}
+        {renderTabButton('owned', 'Owned', 'star')}
+        {renderTabButton('invited', 'Invited', 'mail')}
+      </View>
+
       <FlatList
-        data={data}
-        renderItem={renderItem}
+        data={getActiveGroups()}
+        renderItem={renderGroupItem}
         keyExtractor={(item) => item.id}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={isLoading}
             onRefresh={handleRefresh}
+            tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
           />
         }
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="people-circle" size={64} color={theme.colors.textSecondary} />
+            <Text style={styles.emptyTitle}>
+              {activeTab === 'member' && 'No groups yet'}
+              {activeTab === 'owned' && 'No owned groups'}
+              {activeTab === 'invited' && 'No group invitations'}
+            </Text>
+            <Text style={styles.emptySubtext}>
+              {activeTab === 'member' && 'Join groups to see their newsflashes'}
+              {activeTab === 'owned' && 'Create a group to get started'}
+              {activeTab === 'invited' && 'You\'ll see group invitations here'}
+            </Text>
+            {activeTab === 'owned' && (
+              <Button
+                title="Create Group"
+                onPress={handleCreateGroup}
+                style={styles.createButton}
+              />
+            )}
+          </View>
+        }
       />
-    );
-  };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Groups</Text>
-        <Text style={styles.subtitle}>Organize your connections</Text>
-        
-        {activeTab === 'owned' && (
-          <TouchableOpacity style={styles.createGroupButton} onPress={handleCreateGroup}>
-            <Ionicons name="add" size={20} color={theme.colors.background} />
-            <Text style={styles.createGroupText}>Create Group</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'owned' && styles.activeTab]}
-          onPress={() => setActiveTab('owned')}
-        >
-          <Text style={[styles.tabText, activeTab === 'owned' && styles.activeTabText]}>
-            Owned ({ownedGroups.length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'member' && styles.activeTab]}
-          onPress={() => setActiveTab('member')}
-        >
-          <Text style={[styles.tabText, activeTab === 'member' && styles.activeTabText]}>
-            Member ({memberGroups.length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'invited' && styles.activeTab]}
-          onPress={() => setActiveTab('invited')}
-        >
-          <Text style={[styles.tabText, activeTab === 'invited' && styles.activeTabText]}>
-            Invites
-          </Text>
-          {invitedGroups.length > 0 && (
-            <Badge variant="secondary" size="sm" style={styles.badge}>
-              {invitedGroups.length}
-            </Badge>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.content}>
-        {renderTabContent()}
-      </View>
+      <FloatingActionButton 
+        onPress={handleCreateGroup}
+        icon="add"
+        size="lg"
+      />
     </SafeAreaView>
   );
 };
@@ -302,145 +194,94 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    padding: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
-  },
-  title: {
-    ...theme.typography.h1,
-    color: theme.colors.primary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  subtitle: {
-    ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  createGroupButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.sm,
-  },
-  createGroupText: {
-    ...theme.typography.button,
-    color: theme.colors.background,
-    marginLeft: theme.spacing.xs,
-  },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.background,
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
-    alignItems: 'center',
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: theme.colors.primary,
+  activeTabButton: {
+    backgroundColor: theme.colors.primary + '10',
   },
-  tabText: {
-    ...theme.typography.button,
+  tabLabel: {
+    ...theme.typography.caption,
     color: theme.colors.textSecondary,
+    marginLeft: theme.spacing.xs,
+    fontWeight: '500',
   },
-  activeTabText: {
+  activeTabLabel: {
     color: theme.colors.primary,
     fontWeight: '600',
   },
-  badge: {
-    marginLeft: theme.spacing.xs,
-  },
-  content: {
+  list: {
     flex: 1,
   },
-  listContainer: {
+  listContent: {
     padding: theme.spacing.md,
+    paddingBottom: 100, // Space for floating action button
   },
   groupItem: {
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadows.sm,
+  },
+  groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   groupInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-  },
-  groupIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: `${theme.colors.primary}20`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  groupDetails: {
     marginLeft: theme.spacing.md,
-    flex: 1,
   },
   groupName: {
-    ...theme.typography.body,
-    fontWeight: '600',
+    ...theme.typography.subheadline,
     color: theme.colors.text,
+    marginBottom: 2,
   },
   groupDescription: {
     ...theme.typography.caption,
     color: theme.colors.textSecondary,
-    marginTop: theme.spacing.xs,
   },
-  memberCount: {
-    ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    marginTop: theme.spacing.xs,
-  },
-  ownerBadge: {
+  groupActions: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  actionButton: {
-    minWidth: 80,
+  inviteBadge: {
+    marginRight: theme.spacing.sm,
   },
-  inviteActions: {
-    alignItems: 'center',
-  },
-  acceptButton: {
-    minWidth: 80,
-  },
-  centerContainer: {
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.xl,
+    paddingVertical: theme.spacing.xxl,
   },
-  loadingText: {
+  emptyTitle: {
+    ...theme.typography.h4,
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  emptySubtext: {
     ...theme.typography.body,
     color: theme.colors.textSecondary,
-  },
-  errorText: {
-    ...theme.typography.body,
-    color: theme.colors.error,
-    marginBottom: theme.spacing.md,
-  },
-  emptyText: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
   },
   createButton: {
     marginTop: theme.spacing.md,

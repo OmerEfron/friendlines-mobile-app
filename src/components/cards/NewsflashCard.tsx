@@ -1,13 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Card, CardHeader, CardContent } from './Card';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Badge } from '../common/Badge';
 import { Avatar } from '../common/Avatar';
-import { theme } from '../../styles/theme';
+import { theme, getGradientColors, getRandomAccentColor } from '../../styles/theme';
 import type { Newsflash } from '../../types';
 
 interface NewsflashCardProps {
   newsflash: Newsflash;
+  onPress?: () => void;
+  showActions?: boolean;
 }
 
 const formatTimeAgo = (date: Date | string): string => {
@@ -30,106 +33,261 @@ const formatTimeAgo = (date: Date | string): string => {
 const getSentimentColor = (sentiment?: string): string => {
   switch (sentiment) {
     case 'playful':
-      return theme.colors.warning;
+      return theme.colors.accent6; // Yellow
     case 'proud':
-      return theme.colors.success;
+      return theme.colors.accent3; // Green
     case 'nostalgic':
-      return '#8b5cf6'; // purple
+      return theme.colors.accent5; // Hot pink
     default:
-      return theme.colors.secondary;
+      return theme.colors.accent1; // Bright blue
   }
 };
 
-export const NewsflashCard: React.FC<NewsflashCardProps> = ({ newsflash }) => {
-  // Handle both API format and current format
-  const authorName = newsflash.userFullName || newsflash.author?.name || newsflash.author?.fullName || 'Unknown';
-  const authorAvatar = newsflash.author?.avatar;
-  const headline = newsflash.headline || 'Newsflash Update';
-  const content = newsflash.generatedText || newsflash.transformedText || newsflash.rawText || newsflash.originalText;
-  const timestamp = newsflash.timestamp || newsflash.createdAt;
+const getSentimentLabel = (sentiment?: string): string => {
+  switch (sentiment) {
+    case 'playful':
+      return 'Playful';
+    case 'proud':
+      return 'Proud';
+    case 'nostalgic':
+      return 'Nostalgic';
+    default:
+      return 'News';
+  }
+};
+
+const getSentimentIcon = (sentiment?: string) => {
+  switch (sentiment) {
+    case 'playful':
+      return 'happy';
+    case 'proud':
+      return 'star';
+    case 'nostalgic':
+      return 'heart';
+    default:
+      return 'ellipse';
+  }
+};
+
+const NewsflashCard: React.FC<NewsflashCardProps> = ({ 
+  newsflash, 
+  onPress,
+  showActions = true 
+}) => {
+  const handleBookmarkPress = () => {
+    Alert.alert('Bookmark', 'Bookmark functionality coming soon!');
+  };
 
   return (
-    <Card
-      borderColor={theme.colors.primary}
-      borderWidth={2}
-      style={styles.card}
+    <TouchableOpacity 
+      style={styles.container} 
+      onPress={onPress}
+      activeOpacity={0.95}
     >
-      <CardHeader>
+      <LinearGradient
+        colors={getGradientColors(3)}
+        style={styles.cardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.userInfo}>
-            <Avatar
-              source={authorAvatar}
-              fallback={authorName}
-              size="sm"
+          <View style={styles.authorInfo}>
+            <Avatar 
+              size="sm" 
+              source={newsflash.author?.avatar}
+              fallback={newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
             />
-            <View style={styles.textInfo}>
-              <Text style={styles.headline} numberOfLines={2}>
-                {headline}
+            <View style={styles.authorDetails}>
+              <Text style={styles.authorName}>
+                {newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
               </Text>
-              <Text style={styles.timeAgo}>
-                {formatTimeAgo(timestamp)}
+              <Text style={styles.timestamp}>
+                {formatTimeAgo(newsflash.timestamp || newsflash.createdAt)}
               </Text>
             </View>
           </View>
-          {newsflash.sentiment && (
-            <Badge
-              variant="secondary"
-              size="sm"
-              style={[
-                styles.sentimentBadge,
-                { backgroundColor: getSentimentColor(newsflash.sentiment) }
-              ]}
+          
+          <View style={styles.headerActions}>
+            {newsflash.sentiment && (
+              <View style={[styles.sentimentBadge, { backgroundColor: getSentimentColor(newsflash.sentiment) + '20' }]}>
+                <Ionicons 
+                  name={getSentimentIcon(newsflash.sentiment) as any} 
+                  size={12} 
+                  color={getSentimentColor(newsflash.sentiment)} 
+                />
+                <Text style={[styles.sentimentText, { color: getSentimentColor(newsflash.sentiment) }]}>
+                  {getSentimentLabel(newsflash.sentiment)}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity 
+              style={styles.bookmarkButton}
+              onPress={handleBookmarkPress}
             >
-              {newsflash.sentiment}
-            </Badge>
+              <Ionicons 
+                name="bookmark-outline" 
+                size={20} 
+                color={theme.colors.white} 
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          {newsflash.headline && (
+            <Text style={styles.headline} numberOfLines={3}>
+              {newsflash.headline}
+            </Text>
+          )}
+          
+          <Text style={styles.bodyText} numberOfLines={4}>
+            {newsflash.generatedText || newsflash.transformedText || newsflash.originalText}
+          </Text>
+          
+          {newsflash.groups && newsflash.groups.length > 0 && (
+            <View style={styles.groupsContainer}>
+              <Ionicons name="people" size={14} color={theme.colors.white} />
+              <Text style={styles.groupsText}>
+                Shared in {newsflash.groups.length} group{newsflash.groups.length > 1 ? 's' : ''}
+              </Text>
+            </View>
           )}
         </View>
-      </CardHeader>
-      
-      <CardContent>
-        <Text style={styles.transformedText}>
-          {content}
-        </Text>
-      </CardContent>
-    </Card>
+
+        {/* Actions */}
+        {showActions && (
+          <View style={styles.actions}>
+            <View style={styles.spacer} />
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="ellipsis-horizontal" size={18} color={theme.colors.white} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </LinearGradient>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    marginBottom: theme.spacing.md,
+  container: {
+    marginHorizontal: theme.spacing.md,
+    marginVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.lg,
+  },
+  cardGradient: {
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    marginBottom: theme.spacing.md,
   },
-  userInfo: {
+  authorInfo: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flex: 1,
-    marginRight: theme.spacing.sm,
   },
-  textInfo: {
+  authorDetails: {
     marginLeft: theme.spacing.sm,
     flex: 1,
   },
-  headline: {
-    ...theme.typography.h4,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
-    lineHeight: 22,
+  authorName: {
+    ...theme.typography.subheadline,
+    color: theme.colors.white,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  timeAgo: {
+  timestamp: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
+    color: theme.colors.white,
+    marginTop: 2,
+    opacity: 0.8,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sentimentBadge: {
-    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    marginRight: theme.spacing.sm,
   },
-  transformedText: {
-    ...theme.typography.body,
-    color: theme.colors.text,
+  sentimentText: {
+    ...theme.typography.caption,
+    marginLeft: theme.spacing.xs,
+    fontWeight: '600',
+  },
+  bookmarkButton: {
+    marginLeft: theme.spacing.sm,
+    padding: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  content: {
+    marginBottom: theme.spacing.md,
+  },
+  headline: {
+    ...theme.typography.headline,
+    color: theme.colors.white,
+    marginBottom: theme.spacing.sm,
     lineHeight: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-}); 
+  bodyText: {
+    ...theme.typography.body,
+    color: theme.colors.white,
+    lineHeight: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  groupsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  groupsText: {
+    ...theme.typography.caption,
+    color: theme.colors.white,
+    marginLeft: theme.spacing.xs,
+    opacity: 0.8,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    marginRight: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  spacer: {
+    flex: 1,
+  },
+});
+
+export default NewsflashCard; 

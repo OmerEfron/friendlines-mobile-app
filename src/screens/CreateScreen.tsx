@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, SafeAreaView, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Alert, TouchableOpacity, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../components';
 import { Badge } from '../components/common/Badge';
@@ -20,13 +21,14 @@ const CreateScreen: React.FC = () => {
   const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [generateNewsflash, setGenerateNewsflash] = useState(true);
 
   const { user } = useAppContext();
   
   // If user is null, this shouldn't happen since we have authentication guards
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Authentication error</Text>
         </View>
@@ -108,6 +110,7 @@ const CreateScreen: React.FC = () => {
         audienceType,
         recipients: [], // Legacy field for backward compatibility
         groups: [], // Legacy field for backward compatibility
+        generate: generateNewsflash,
         ...(audienceType === 'friend' && selectedFriend && {
           targetFriendId: selectedFriend.id
         }),
@@ -123,6 +126,7 @@ const CreateScreen: React.FC = () => {
       setAudienceType('friends');
       setSelectedFriend(null);
       setSelectedGroups([]);
+      setGenerateNewsflash(true);
       
       Alert.alert('Success', 'Newsflash created successfully!');
     } catch (error) {
@@ -247,7 +251,7 @@ const CreateScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Create Newsflash</Text>
         <Text style={styles.subtitle}>Transform your update into a headline</Text>
@@ -272,6 +276,23 @@ const CreateScreen: React.FC = () => {
         <Text style={styles.characterCount}>
           {originalText.length}/500
         </Text>
+
+        <View style={styles.generateSection}>
+          <View style={styles.generateHeader}>
+            <Text style={styles.sectionTitle}>Newsflash Generation</Text>
+            <Switch
+              value={generateNewsflash}
+              onValueChange={setGenerateNewsflash}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              thumbColor={generateNewsflash ? theme.colors.background : theme.colors.textSecondary}
+            />
+          </View>
+          <Text style={styles.generateDescription}>
+            {generateNewsflash 
+              ? 'Transform your text into a newsflash headline' 
+              : 'Keep your original text as-is (no transformation)'}
+          </Text>
+        </View>
 
         {renderAudienceSelector()}
         {renderFriendSelector()}
@@ -475,6 +496,20 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     color: theme.colors.error ?? '#ff4444',
     textAlign: 'center',
+  },
+  generateSection: {
+    marginBottom: theme.spacing.lg,
+  },
+  generateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+  },
+  generateDescription: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    textAlign: 'left',
   },
 });
 

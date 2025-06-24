@@ -7,13 +7,13 @@ import { useAppContext } from '../contexts/AppContext';
 import { apiService } from '../services/api';
 import type { LoginData, RootStackParamList } from '../types';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
-interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
+interface RegisterScreenProps {
+  navigation: RegisterScreenNavigationProp;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     return true;
   };
 
-  const handleLogin = async (): Promise<void> => {
+  const handleRegister = async (): Promise<void> => {
     if (!validateForm()) {
       return;
     }
@@ -55,23 +55,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     setIsLoading(true);
 
     try {
-      // First check if user exists
+      // First check if user already exists
       const userCheck = await apiService.checkUser(email.trim().toLowerCase());
       
-      if (!userCheck.exists) {
+      if (userCheck.exists) {
         Alert.alert(
-          'Account Not Found', 
-          'No account found with this email. Please sign up to create a new account.',
+          'Account Already Exists', 
+          'An account with this email already exists. Please sign in instead.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Sign Up', onPress: () => navigation.navigate('Register') }
+            { text: 'Sign In', onPress: () => navigation.navigate('Login') }
           ]
         );
         return;
       }
 
-      // User exists, proceed with login
-      // For existing users, we provide both fullName and email for verification
+      // User doesn't exist, proceed with registration
+      // For new users, we provide both fullName and email
       const loginData: LoginData = {
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
@@ -80,20 +80,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       const user = await apiService.login(loginData);
       await login(user);
       
-      Alert.alert('Success', 'Welcome back to Friendlines!');
+      Alert.alert('Success', 'Welcome to Friendlines! Your account has been created successfully.');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Registration error:', error);
       Alert.alert(
-        'Login Failed', 
-        'Failed to login. Please check your credentials and try again.'
+        'Registration Failed', 
+        'Failed to create your account. Please check your connection and try again.'
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignUp = (): void => {
-    navigation.navigate('Register');
+  const handleSignIn = (): void => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -104,8 +104,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your existing Friendlines account</Text>
+            <Text style={styles.title}>Join Friendlines</Text>
+            <Text style={styles.subtitle}>Create your first account to get started</Text>
           </View>
 
           <View style={styles.form}>
@@ -131,12 +131,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             />
 
             <Button
-              title={isLoading ? 'Signing In...' : 'Sign In'}
-              onPress={handleLogin}
+              title={isLoading ? 'Creating Account...' : 'Create Account'}
+              onPress={handleRegister}
               disabled={isLoading}
               loading={isLoading}
               fullWidth
-              style={styles.loginButton}
+              style={styles.registerButton}
             />
 
             <View style={styles.divider}>
@@ -146,17 +146,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </View>
 
             <Button
-              title="Create New Account"
-              onPress={handleSignUp}
+              title="Sign In to Existing Account"
+              onPress={handleSignIn}
               variant="outline"
               fullWidth
-              style={styles.signUpButton}
+              style={styles.signInButton}
             />
           </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              Don't have an account yet? Tap "Create New Account" above.
+              Already have an account? Tap "Sign In to Existing Account" above.
             </Text>
           </View>
         </View>
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: theme.spacing.md,
   },
-  loginButton: {
+  registerButton: {
     marginTop: theme.spacing.md,
   },
   divider: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginHorizontal: theme.spacing.md,
   },
-  signUpButton: {
+  signInButton: {
     marginTop: theme.spacing.sm,
   },
   footer: {
@@ -244,4 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen; 
+export default RegisterScreen; 

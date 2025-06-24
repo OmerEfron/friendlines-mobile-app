@@ -13,7 +13,6 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 ### 📝 Posts & Newsflash
 - **Post Creation**: Create posts with automatic newsflash generation
 - **Audience Targeting**: Post to friends, groups, or specific friends
-- **Social Features**: Likes, comments, and engagement
 - **Privacy Control**: Granular audience targeting and filtering
 
 ### 👥 Groups
@@ -32,7 +31,7 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 
 ### Endpoints
 - **[Authentication](endpoints/authentication_endpoints.md)** - User auth, profiles, friendship management
-- **[Posts](endpoints/posts_endpoints.md)** - Create posts, audience targeting, likes, comments
+- **[Posts](endpoints/posts_endpoints.md)** - Create posts, audience targeting
 - **[Groups](endpoints/groups_endpoints.md)** - Group management, invitations, membership
 
 ### Features

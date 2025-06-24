@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourcompany.friendlines",
@@ -35,7 +37,10 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "http://192.168.1.132:3000"
+      "apiUrl": "http://192.168.1.132:3000",
+      "eas": {
+        "projectId": "1fe3f805-6b25-4921-aa3e-39687583f93e"
+      }
     },
     "plugins": [
       [
@@ -57,7 +62,9 @@
       [
         "expo-background-task",
         {
-          "backgroundModes": ["background-processing"]
+          "backgroundModes": [
+            "background-processing"
+          ]
         }
       ]
     ],

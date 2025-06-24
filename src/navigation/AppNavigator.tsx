@@ -1,115 +1,29 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, Text, StyleSheet } from 'react-native';
 
 import { theme } from '../styles/theme';
 import { useAppContext } from '../contexts/AppContext';
-import type { RootTabParamList, RootStackParamList } from '../types';
+import type { RootStackParamList } from '../types';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
 import CreateScreen from '../screens/CreateScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import GroupsScreen from '../screens/GroupsScreen';
+import GroupFeedsScreen from '../screens/GroupFeedsScreen';
+import UserFeedScreen from '../screens/UserFeedScreen';
+import NewsflashDetailScreen from '../screens/NewsflashDetailScreen';
+import MenuScreen from '../screens/MenuScreen';
+import SearchScreen from '../screens/SearchScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import NotificationTestScreen from '../screens/NotificationTestScreen';
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
-
-const TabNavigator: React.FC = () => {
-  console.log('📱 TabNavigator rendering with detachInactiveScreens=false');
-  
-  return (
-    <Tab.Navigator
-      detachInactiveScreens={false}
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-          
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Create':
-              iconName = focused ? 'add-circle' : 'add-circle-outline';
-              break;
-            case 'Friends':
-              iconName = focused ? 'people' : 'people-outline';
-              break;
-            case 'Groups':
-              iconName = focused ? 'people-circle' : 'people-circle-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-            default:
-              iconName = 'ellipse';
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: theme.colors.background,
-          borderTopColor: theme.colors.border,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-          height: Platform.OS === 'ios' ? 84 : 64,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
-        headerShown: false,
-      })}
-    >
-      <Tab.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{ 
-          tabBarLabel: 'Home',
-          tabBarAccessibilityLabel: 'Home tab',
-        }}
-      />
-      <Tab.Screen 
-        name="Create" 
-        component={CreateScreen}
-        options={{ 
-          tabBarLabel: 'Create',
-          tabBarAccessibilityLabel: 'Create newsflash tab',
-        }}
-      />
-      <Tab.Screen 
-        name="Friends" 
-        component={FriendsScreen}
-        options={{ 
-          tabBarLabel: 'Friends',
-          tabBarAccessibilityLabel: 'Friends tab',
-        }}
-      />
-      <Tab.Screen 
-        name="Groups" 
-        component={GroupsScreen}
-        options={{ 
-          tabBarLabel: 'Groups',
-          tabBarAccessibilityLabel: 'Groups tab',
-        }}
-      />
-      <Tab.Screen 
-        name="Profile" 
-        component={ProfileScreen}
-        options={{ 
-          tabBarLabel: 'Profile',
-          tabBarAccessibilityLabel: 'Profile tab',
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
 
 const AuthenticatedNavigator: React.FC = () => {
   console.log('📚 AuthenticatedNavigator rendering with detachInactiveScreens=false');
@@ -117,23 +31,112 @@ const AuthenticatedNavigator: React.FC = () => {
   return (
     <Stack.Navigator
       detachInactiveScreens={false}
+      initialRouteName="MainFeed"
       screenOptions={{
-        headerStyle: {
+        headerShown: false, // We'll use our custom NewsHeader
+        cardStyle: {
           backgroundColor: theme.colors.background,
-        },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: {
-          fontWeight: '600',
-          fontSize: 18,
         },
       }}
     >
       <Stack.Screen 
-        name="MainTabs" 
-        component={TabNavigator}
-        options={{ headerShown: false }}
+        name="MainFeed" 
+        component={HomeScreen}
+        options={{ 
+          title: 'Main Feed',
+        }}
       />
-      {/* Additional stack screens can be added here */}
+      <Stack.Screen 
+        name="GroupFeeds" 
+        component={GroupFeedsScreen}
+        options={{ 
+          title: 'Group Feeds',
+        }}
+      />
+      <Stack.Screen 
+        name="UserFeed" 
+        component={UserFeedScreen}
+        options={{ 
+          title: 'User Feed',
+        }}
+      />
+      <Stack.Screen 
+        name="CreateNewsflash" 
+        component={CreateScreen}
+        options={{ 
+          title: 'Create Newsflash',
+        }}
+      />
+      <Stack.Screen 
+        name="NewsflashDetail" 
+        component={NewsflashDetailScreen}
+        options={{ 
+          title: 'Newsflash Detail',
+        }}
+      />
+      <Stack.Screen 
+        name="UserProfile" 
+        component={ProfileScreen}
+        options={{ 
+          title: 'User Profile',
+        }}
+      />
+      <Stack.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{ 
+          title: 'Settings',
+        }}
+      />
+      <Stack.Screen 
+        name="NotificationTest" 
+        component={NotificationTestScreen}
+        options={{ 
+          title: 'Notification Testing',
+        }}
+      />
+      <Stack.Screen 
+        name="FriendProfile" 
+        component={ProfileScreen}
+        options={{ 
+          title: 'Friend Profile',
+        }}
+      />
+      <Stack.Screen 
+        name="GroupDetail" 
+        component={GroupsScreen} // TODO: Create GroupDetailScreen
+        options={{ 
+          title: 'Group Detail',
+        }}
+      />
+      <Stack.Screen 
+        name="CreateGroup" 
+        component={GroupsScreen} // TODO: Create CreateGroupScreen
+        options={{ 
+          title: 'Create Group',
+        }}
+      />
+      <Stack.Screen 
+        name="ManageGroup" 
+        component={GroupsScreen} // TODO: Create ManageGroupScreen
+        options={{ 
+          title: 'Manage Group',
+        }}
+      />
+      <Stack.Screen 
+        name="Search" 
+        component={SearchScreen}
+        options={{ 
+          title: 'Search',
+        }}
+      />
+      <Stack.Screen 
+        name="Menu" 
+        component={MenuScreen}
+        options={{ 
+          title: 'Menu',
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -146,6 +149,7 @@ const UnauthenticatedNavigator: React.FC = () => {
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>
   );
 };

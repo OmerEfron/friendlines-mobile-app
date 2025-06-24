@@ -1,15 +1,16 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
-import { theme } from '../../styles/theme';
+import { theme, getRandomAccentColor } from '../../styles/theme';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'default' | 'outline' | 'secondary';
+  variant?: 'default' | 'outline' | 'secondary' | 'colorful';
   size?: 'sm' | 'md' | 'lg';
   selected?: boolean;
   onPress?: () => void;
   disabled?: boolean;
   style?: any;
+  color?: string;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -20,12 +21,21 @@ export const Badge: React.FC<BadgeProps> = ({
   onPress,
   disabled = false,
   style,
+  color,
 }) => {
   const isInteractive = Boolean(onPress);
   
   const badgeVariant = selected ? 'default' : variant;
   
   const Container = isInteractive ? TouchableOpacity : View;
+  
+  const getBadgeColor = () => {
+    if (color) return color;
+    if (variant === 'colorful') return getRandomAccentColor();
+    return theme.colors.primary;
+  };
+  
+  const badgeColor = getBadgeColor();
   
   return (
     <Container
@@ -34,6 +44,7 @@ export const Badge: React.FC<BadgeProps> = ({
         styles[badgeVariant],
         styles[size],
         disabled && styles.disabled,
+        variant === 'colorful' && { backgroundColor: badgeColor + '20', borderColor: badgeColor },
         style,
       ]}
       onPress={!disabled ? onPress : undefined}
@@ -47,7 +58,12 @@ export const Badge: React.FC<BadgeProps> = ({
       }}
       accessibilityHint={isInteractive ? (selected ? 'Tap to deselect' : 'Tap to select') : undefined}
     >
-      <Text style={[styles.text, styles[`${badgeVariant}Text`], styles[`${size}Text`]]}>
+      <Text style={[
+        styles.text, 
+        styles[`${badgeVariant}Text`], 
+        styles[`${size}Text`],
+        variant === 'colorful' && { color: badgeColor }
+      ]}>
         {children}
       </Text>
     </Container>
@@ -64,17 +80,24 @@ const styles = StyleSheet.create({
     minHeight: 32,
     marginRight: theme.spacing.xs,
     marginBottom: theme.spacing.xs,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    ...theme.shadows.sm,
   },
   default: {
     backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   outline: {
     backgroundColor: theme.colors.transparent,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary,
   },
   secondary: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.accent3 + '20',
+    borderColor: theme.colors.accent3,
+  },
+  colorful: {
+    backgroundColor: 'transparent',
   },
   sm: {
     paddingHorizontal: theme.spacing.xs,
@@ -101,12 +124,20 @@ const styles = StyleSheet.create({
   },
   defaultText: {
     color: theme.colors.white,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   outlineText: {
-    color: theme.colors.text,
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   secondaryText: {
-    color: theme.colors.text,
+    color: theme.colors.accent3,
+    fontWeight: '600',
+  },
+  colorfulText: {
+    fontWeight: '600',
   },
   smText: {
     fontSize: 12,
