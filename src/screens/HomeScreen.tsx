@@ -22,6 +22,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAppContext();
+  const { newsflashes, isLoading, error, refetch } = useNewsflashes(user!);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'playful' | 'proud' | 'nostalgic'>('all');
   const [showNotification, setShowNotification] = useState(false);
@@ -41,40 +42,46 @@ const HomeScreen: React.FC = () => {
     );
   }
 
-  const { newsflashes = [] } = useNewsflashes(user!);
-
-  // Filter newsflashes based on selected filter
+  // Filter newsflashes for the current user
   const filteredNewsflashes = useMemo(() => {
-    if (selectedFilter === 'all') {
-      return newsflashes;
-    }
+    if (!user) return [];
     
-    // For now, return all newsflashes since sentiment field might not be available
-    // TODO: Implement proper sentiment filtering when API provides sentiment data
-    return newsflashes;
-  }, [newsflashes, selectedFilter]);
+    return newsflashes.filter(newsflash => {
+      // Show newsflashes from friends
+      if (user.friends?.includes(newsflash.userId || '')) return true;
+      
+      // Show newsflashes where user is a recipient
+      if (newsflash.recipients?.includes(user.id)) return true;
+      
+      // Show newsflashes from groups the user is in
+      if (newsflash.groupIds && newsflash.groupIds.length > 0) {
+        // This would need to be enhanced with actual group membership check
+        return true;
+      }
+      
+      return false;
+    });
+  }, [newsflashes, user]);
 
-  // Generate trending topics from newsflashes
+  // Get trending topics from newsflashes
   const trendingTopics = useMemo(() => {
-    const topicMap = new Map<string, { count: number; sentiment: string }>();
+    const topicCounts: Record<string, { count: number; sentiment: string }> = {};
     
     newsflashes.forEach(newsflash => {
-      const text = newsflash.headline || newsflash.generatedText || newsflash.originalText || '';
-      const words = text.toLowerCase().match(/\b\w{4,}\b/g) || [];
+      const text = newsflash.transformedText || newsflash.originalText || '';
+      const words = text.toLowerCase().split(/\s+/);
       
       words.forEach(word => {
-        if (word.length > 3) {
-          const existing = topicMap.get(word);
-          if (existing) {
-            existing.count++;
-          } else {
-            topicMap.set(word, { count: 1, sentiment: newsflash.sentiment || 'playful' });
+        if (word.length > 3 && !['the', 'and', 'for', 'with', 'this', 'that', 'have', 'from'].includes(word)) {
+          if (!topicCounts[word]) {
+            topicCounts[word] = { count: 0, sentiment: newsflash.sentiment || 'neutral' };
           }
+          topicCounts[word].count++;
         }
       });
     });
     
-    return Array.from(topicMap.entries())
+    return Object.entries(topicCounts)
       .map(([topic, data]) => ({
         id: topic,
         topic,
@@ -123,22 +130,17 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleBookmark = (newsflash: Newsflash) => {
-    // Show success notification
-    setNotificationType('success');
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
+    // Bookmark functionality - notifications will be handled by the backend
+    console.log('Bookmarking newsflash:', newsflash.id);
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => {
+    try {
+      await refetch();
+    } finally {
       setRefreshing(false);
-      // Show refresh success notification
-      setNotificationType('success');
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-    }, 1000);
+    }
   };
 
   const renderNewsflash = ({ item, index }: { item: Newsflash; index: number }) => (
@@ -191,17 +193,6 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {showNotification && (
-        <NotificationBanner
-          type={notificationType}
-          title={getNotificationConfig().title}
-          message={getNotificationConfig().message}
-          onDismiss={() => setShowNotification(false)}
-          autoDismiss={true}
-          duration={3000}
-        />
-      )}
-      
       <NewsHeader 
         title="Friendlines" 
         subtitle="Your Personal News Feed"

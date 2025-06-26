@@ -50,9 +50,24 @@ class ApiService {
         ...options,
       };
 
+      console.log('🌐 API Request:', {
+        url,
+        method: config.method || 'GET',
+        body: config.body,
+        headers: config.headers
+      });
+
       const response = await fetch(url, config);
       
+      console.log('📡 API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url
+      });
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
         throw new ApiError(
           `HTTP error! status: ${response.status}`,
           response.status
@@ -60,8 +75,10 @@ class ApiService {
       }
 
       const data = await response.json();
+      console.log('✅ API Success Response:', data);
       return data;
     } catch (error) {
+      console.error('💥 API Request Failed:', error);
       if (error instanceof ApiError) {
         throw error;
       }

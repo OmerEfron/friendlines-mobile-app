@@ -8,7 +8,7 @@ export { FloatingActionButton } from './common/FloatingActionButton';
 export { default as TrendingSection } from './common/TrendingSection';
 export { default as AnimatedNewsflashCard } from './common/AnimatedNewsflashCard';
 export { default as EnhancedRefreshControl } from './common/EnhancedRefreshControl';
-export { default as NotificationBanner } from './common/NotificationBanner';
+export { default as NotificationBanner } from './NotificationBanner';
 
 // Card components
 export { Card, CardHeader, CardContent } from './cards/Card';

@@ -21,7 +21,6 @@ import NewsflashDetailScreen from '../screens/NewsflashDetailScreen';
 import MenuScreen from '../screens/MenuScreen';
 import SearchScreen from '../screens/SearchScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import NotificationTestScreen from '../screens/NotificationTestScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -86,13 +85,6 @@ const AuthenticatedNavigator: React.FC = () => {
         component={SettingsScreen}
         options={{ 
           title: 'Settings',
-        }}
-      />
-      <Stack.Screen 
-        name="NotificationTest" 
-        component={NotificationTestScreen}
-        options={{ 
-          title: 'Notification Testing',
         }}
       />
       <Stack.Screen 

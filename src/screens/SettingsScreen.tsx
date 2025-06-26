@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
-import { NewsHeader, NotificationBanner } from '../components';
+import { NewsHeader } from '../components';
 import { theme } from '../styles/theme';
 import { useAppContext } from '../contexts/AppContext';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useNotifications } from '../contexts/NotificationContext';
 
 interface SettingsSectionProps {
   title: string;
@@ -67,12 +68,12 @@ const SettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user, logout } = useAppContext();
   const { registerForPushNotifications } = usePushNotifications(user?.id);
+  const { expoPushToken } = useNotifications();
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
-  const [showNotification, setShowNotification] = useState(false);
-  const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [isRegisteringNotifications, setIsRegisteringNotifications] = useState(false);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -114,8 +115,6 @@ const SettingsScreen: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             logout();
-            setShowNotification(true);
-            setTimeout(() => setShowNotification(false), 3000);
           }
         },
       ]
@@ -124,24 +123,17 @@ const SettingsScreen: React.FC = () => {
 
   const handleToggleNotifications = () => {
     setNotificationsEnabled(!notificationsEnabled);
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
   };
 
   const handleToggleDarkMode = () => {
     setDarkModeEnabled(!darkModeEnabled);
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
   };
 
   const handleToggleAutoRefresh = () => {
     setAutoRefreshEnabled(!autoRefreshEnabled);
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
   };
 
   const handleTestNotification = async () => {
-    setIsTestingNotification(true);
     try {
       // First, ensure we have permissions
       const { status } = await Notifications.getPermissionsAsync();
@@ -177,40 +169,28 @@ const SettingsScreen: React.FC = () => {
         trigger: null, // Send immediately
       });
 
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
+      Alert.alert('Success', 'Test notification sent successfully!');
     } catch (error) {
       console.error('Error sending test notification:', error);
       Alert.alert('Error', 'Failed to send test notification. Please try again.');
-    } finally {
-      setIsTestingNotification(false);
     }
   };
 
   const handleRegisterNotifications = async () => {
+    setIsRegisteringNotifications(true);
     try {
       await registerForPushNotifications();
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
+      Alert.alert('Success', 'Notifications registered successfully!');
     } catch (error) {
       console.error('Error registering notifications:', error);
       Alert.alert('Error', 'Failed to register notifications. Please try again.');
+    } finally {
+      setIsRegisteringNotifications(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {showNotification && (
-        <NotificationBanner
-          type="success"
-          title="Settings updated"
-          message="Your preferences have been saved"
-          onDismiss={() => setShowNotification(false)}
-          autoDismiss={true}
-          duration={3000}
-        />
-      )}
-      
       <NewsHeader 
         title="Settings" 
         subtitle="App preferences and account"
@@ -259,9 +239,18 @@ const SettingsScreen: React.FC = () => {
           
           <SettingsItem
             title="Register for Notifications"
-            subtitle="Set up push notification permissions"
+            subtitle={expoPushToken ? "Notifications are registered" : "Set up push notification permissions"}
             icon="notifications-circle"
             onPress={handleRegisterNotifications}
+            rightComponent={
+              isRegisteringNotifications ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>Registering...</Text>
+                </View>
+              ) : expoPushToken ? (
+                <Ionicons name="checkmark-circle" size={20} color={theme.colors.success} />
+              ) : undefined
+            }
           />
 
           <SettingsItem
@@ -269,20 +258,6 @@ const SettingsScreen: React.FC = () => {
             subtitle="Send a test notification to verify setup"
             icon="flash"
             onPress={handleTestNotification}
-            rightComponent={
-              isTestingNotification ? (
-                <View style={styles.loadingContainer}>
-                  <Text style={styles.loadingText}>Testing...</Text>
-                </View>
-              ) : undefined
-            }
-          />
-
-          <SettingsItem
-            title="Notification Testing"
-            subtitle="Comprehensive notification testing tools"
-            icon="flask"
-            onPress={() => navigation.navigate('NotificationTest' as never)}
           />
           
           <SettingsItem

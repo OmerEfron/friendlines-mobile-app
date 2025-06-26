@@ -132,7 +132,6 @@ export type RootStackParamList = {
   NewsflashDetail: { newsflashId: string };
   UserProfile: { userId: string };
   Settings: undefined;
-  NotificationTest: undefined;
   Login: undefined;
   Register: undefined;
   FriendProfile: { userId: string };

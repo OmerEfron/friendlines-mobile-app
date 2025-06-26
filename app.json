@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "jsEngine": "hermes",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -20,7 +19,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.yourcompany.friendlines",
       "buildNumber": "1.0.0",
-      "deploymentTarget": "15.1"
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -29,12 +32,17 @@
       },
       "package": "com.yourcompany.friendlines",
       "versionCode": 1,
-      "minSdkVersion": 24,
-      "compileSdkVersion": 35,
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#ffffff",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "New Notification"
     },
     "extra": {
       "apiUrl": "http://192.168.1.132:3000",
@@ -66,10 +74,8 @@
             "background-processing"
           ]
         }
-      ]
-    ],
-    "experiments": {
-      "newArchEnabled": true
-    }
+      ],
+      "react-native-edge-to-edge"
+    ]
   }
 }

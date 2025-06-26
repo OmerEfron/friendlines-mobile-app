@@ -53,12 +53,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
 
     setIsLoading(true);
+    console.log('🔐 Starting login process...');
 
     try {
       // First check if user exists
+      console.log('🔍 Checking if user exists:', email.trim().toLowerCase());
       const userCheck = await apiService.checkUser(email.trim().toLowerCase());
+      console.log('👤 User check result:', userCheck);
       
       if (!userCheck.exists) {
+        console.log('❌ User not found, redirecting to sign up');
         Alert.alert(
           'Account Not Found', 
           'No account found with this email. Please sign up to create a new account.',
@@ -77,12 +81,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         email: email.trim().toLowerCase(),
       };
 
+      console.log('📤 Sending login data:', loginData);
       const user = await apiService.login(loginData);
+      console.log('✅ Login successful, user data:', user);
       await login(user);
       
       Alert.alert('Success', 'Welcome back to Friendlines!');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('💥 Login error:', error);
       Alert.alert(
         'Login Failed', 
         'Failed to login. Please check your credentials and try again.'
