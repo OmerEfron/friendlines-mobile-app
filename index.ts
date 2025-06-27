@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import 'react-native-screens/native-stack';
 import { registerRootComponent } from 'expo';
 
 import App from './App';

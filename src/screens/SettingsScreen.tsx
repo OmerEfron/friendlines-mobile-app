@@ -3,11 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
 import { NewsHeader } from '../components';
 import { theme } from '../styles/theme';
 import { useAppContext } from '../contexts/AppContext';
-import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useNotifications } from '../contexts/NotificationContext';
 
 interface SettingsSectionProps {
@@ -67,8 +65,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user, logout } = useAppContext();
-  const { registerForPushNotifications } = usePushNotifications(user?.id);
-  const { expoPushToken } = useNotifications();
+  const { expoPushToken, registerForNotifications, sendTestNotification } = useNotifications();
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -135,52 +132,29 @@ const SettingsScreen: React.FC = () => {
 
   const handleTestNotification = async () => {
     try {
-      // First, ensure we have permissions
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'Please enable notification permissions to test notifications.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Enable', 
-              onPress: async () => {
-                await registerForPushNotifications();
-                // Try the test again after registration
-                setTimeout(handleTestNotification, 1000);
-              }
-            }
-          ]
-        );
-        return;
-      }
-
-      // Send a test notification
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Test Notification',
-          body: 'This is a test notification from Friendlines! 🎉',
-          data: {
-            type: 'test',
-            timestamp: new Date().toISOString(),
-          },
-        },
-        trigger: null, // Send immediately
-      });
-
+      console.log('🧪 Testing notification...');
+      await sendTestNotification();
       Alert.alert('Success', 'Test notification sent successfully!');
     } catch (error) {
-      console.error('Error sending test notification:', error);
+      console.error('❌ Error sending test notification:', error);
       Alert.alert('Error', 'Failed to send test notification. Please try again.');
     }
   };
 
   const handleRegisterNotifications = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'Please login to register for notifications.');
+      return;
+    }
+
     setIsRegisteringNotifications(true);
     try {
-      await registerForPushNotifications();
-      Alert.alert('Success', 'Notifications registered successfully!');
+      const success = await registerForNotifications(user.id);
+      if (success) {
+        Alert.alert('Success', 'Notifications registered successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to register notifications. Please try again.');
+      }
     } catch (error) {
       console.error('Error registering notifications:', error);
       Alert.alert('Error', 'Failed to register notifications. Please try again.');

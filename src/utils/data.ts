@@ -3,12 +3,12 @@ import type { Newsflash, User, Friend, Group } from '@/types';
 // Newsflash utilities
 export const sortNewsflashesByDate = (newsflashes: Newsflash[]): Newsflash[] => {
   return [...newsflashes].sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    new Date(b.createdAt || new Date()).getTime() - new Date(a.createdAt || new Date()).getTime()
   );
 };
 
 export const filterNewsflashesByUser = (newsflashes: Newsflash[], userId: string): Newsflash[] => {
-  return newsflashes.filter(newsflash => newsflash.author.id === userId);
+  return newsflashes.filter(newsflash => newsflash.author?.id === userId);
 };
 
 export const filterNewsflashesBySentiment = (
@@ -29,13 +29,13 @@ export const getNewsflashesForUser = (
   
   return newsflashes.filter(newsflash => {
     // Show own newsflashes
-    if (newsflash.author.id === currentUser.id) return true;
+    if (newsflash.author?.id === currentUser.id) return true;
     
     // Show newsflashes from friends
-    if (friendIds.includes(newsflash.author.id)) return true;
+    if (newsflash.author?.id && friendIds.includes(newsflash.author.id)) return true;
     
     // Show newsflashes where user is a recipient
-    if (newsflash.recipients.includes(currentUser.id)) return true;
+    if (newsflash.recipients?.includes(currentUser.id)) return true;
     
     return false;
   });
@@ -75,9 +75,9 @@ export const searchNewsflashes = (newsflashes: Newsflash[], query: string): News
   const lowerQuery = query.toLowerCase();
   return newsflashes.filter(newsflash =>
     (newsflash.headline?.toLowerCase().includes(lowerQuery)) ||
-    newsflash.transformedText.toLowerCase().includes(lowerQuery) ||
-    newsflash.originalText.toLowerCase().includes(lowerQuery) ||
-    newsflash.author.name.toLowerCase().includes(lowerQuery)
+    (newsflash.transformedText?.toLowerCase().includes(lowerQuery)) ||
+    (newsflash.originalText?.toLowerCase().includes(lowerQuery)) ||
+    (newsflash.author?.name.toLowerCase().includes(lowerQuery))
   );
 };
 

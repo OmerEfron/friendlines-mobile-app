@@ -6,6 +6,7 @@ import { Platform, View, Text, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
 import { useAppContext } from '../contexts/AppContext';
 import type { RootStackParamList } from '../types';
+import NotificationManager from '../components/NotificationManager';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
@@ -160,6 +161,7 @@ const AppNavigator: React.FC = () => {
   if (isInitializing) {
     return (
       <NavigationContainer>
+        <NotificationManager />
         <LoadingScreen />
       </NavigationContainer>
     );
@@ -167,6 +169,7 @@ const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
+      <NotificationManager />
       {isAuthenticated ? <AuthenticatedNavigator /> : <UnauthenticatedNavigator />}
     </NavigationContainer>
   );

@@ -13,6 +13,7 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 ### 📝 Posts & Newsflash
 - **Post Creation**: Create posts with automatic newsflash generation
 - **Audience Targeting**: Post to friends, groups, or specific friends
+- **Social Features**: Likes, comments, and engagement
 - **Privacy Control**: Granular audience targeting and filtering
 
 ### 👥 Groups
@@ -31,7 +32,7 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 
 ### Endpoints
 - **[Authentication](endpoints/authentication_endpoints.md)** - User auth, profiles, friendship management
-- **[Posts](endpoints/posts_endpoints.md)** - Create posts, audience targeting
+- **[Posts](endpoints/posts_endpoints.md)** - Create posts, audience targeting, likes, comments
 - **[Groups](endpoints/groups_endpoints.md)** - Group management, invitations, membership
 
 ### Features
@@ -39,8 +40,7 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 - **[Post Audience Targeting](social_features/post_audience_targeting.md)** - Privacy and targeting features
 
 ### Architecture
-- **[Groups Architecture](architecture/groups_architecture.md)** - Group system design
-- **[Push Notifications](architecture/push_notifications_architecture.md)** - Notification system
+- **[Push Notifications Architecture](architecture/push_notifications_architecture.md)** - Notification delivery workflow
 - **[HTTP Status Codes](architecture/http_status_codes.md)** - API response codes
 
 ### General
@@ -49,12 +49,14 @@ Friendlines is a social platform with newsflash-style posts, friendship system, 
 
 ## 🎯 Quick Start
 
-### 1. Authentication
+### 1. Login/Create User
 ```bash
-# Create/login user
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3000/api/login \
   -H "Content-Type: application/json" \
-  -d '{"fullName": "John Doe", "email": "john@example.com"}'
+  -d '{
+    "fullName": "John Doe",
+    "email": "john@example.com"
+  }'
 ```
 
 ### 2. Create a Post
@@ -69,25 +71,81 @@ curl -X POST http://localhost:3000/api/posts \
   }'
 ```
 
-### 3. Manage Friendships
+### 3. Get Posts
 ```bash
-# Send friend request
-curl -X POST http://localhost:3000/api/auth/users/u987654321/friend-request \
-  -H "Content-Type: application/json" \
-  -d '{"userId": "u123456789"}'
+# Get user's posts only
+curl "http://localhost:3000/api/posts/u123456789"
+
+# Get user's posts and their friends' posts
+curl "http://localhost:3000/api/posts/u123456789?includeFriends=true"
+
+# Get filtered posts with pagination
+curl "http://localhost:3000/api/posts?currentUserId=u123456789&page=1&limit=10"
 ```
 
-### 4. Create a Group
+### 4. Manage Friendships
+```bash
+# Send friend request
+curl -X POST http://localhost:3000/api/users/u987654321/friend-request \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "u123456789"}'
+
+# Get friends list
+curl "http://localhost:3000/api/users/u123456789/friends"
+```
+
+### 5. Create a Group
 ```bash
 # Create group
-curl -X POST http://localhost:3000/api/groups \
+curl -X POST http://localhost:3000/api/groups/u123456789 \
   -H "Content-Type: application/json" \
   -d '{
     "name": "My Group",
-    "description": "A great group for friends",
-    "creatorId": "u123456789"
+    "description": "A test group"
   }'
 ```
+
+## Development
+
+When running in development mode (`NODE_ENV=development`), the server automatically creates comprehensive test data including:
+
+### Test User
+- **Email**: `test@example.com`
+- **Name**: Test User
+- **ID**: `utest123456789`
+
+### Test Data Includes
+- 6 test users with various friendship relationships
+- 3 test groups with different membership states
+- 7 test posts with different audience types (public, friends, friend-specific, groups)
+- 3 test notifications
+- Complete social network with pending friend requests
+
+### Quick Test Endpoints
+```bash
+# Test user's posts only
+curl "http://localhost:3000/api/posts/utest123456789"
+
+# Test user's posts + friends' posts
+curl "http://localhost:3000/api/posts/utest123456789?includeFriends=true"
+
+# Test user's friends
+curl "http://localhost:3000/api/users/utest123456789/friends"
+
+# Test user's groups
+curl "http://localhost:3000/api/groups/user/utest123456789"
+
+# Test user's notifications
+curl "http://localhost:3000/api/notifications/utest123456789"
+```
+
+The test data demonstrates all features including:
+- ✅ Public, friends-only, friend-specific, and group posts
+- ✅ Likes and comments on posts
+- ✅ Friendship system with pending requests
+- ✅ Group memberships and invitations
+- ✅ Push notifications
+- ✅ Audience targeting and filtering
 
 ## 🔄 API Conventions
 

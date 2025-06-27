@@ -12,9 +12,12 @@ export const formatDate = (date: Date): string => {
   }).format(date);
 };
 
-export const formatTimeAgo = (date: Date): string => {
+export const formatTimeAgo = (date: Date | string): string => {
+  if (!date) return 'unknown';
+  
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
+  const diff = now.getTime() - targetDate.getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -23,7 +26,7 @@ export const formatTimeAgo = (date: Date): string => {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return formatDate(date);
+  return formatDate(targetDate);
 };
 
 // Text utilities

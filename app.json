@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.friendlines",
+      "bundleIdentifier": "com.omerefron.friendlines",
       "buildNumber": "1.0.0",
       "infoPlist": {
         "UIBackgroundModes": [
@@ -30,9 +30,18 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourcompany.friendlines",
+      "package": "com.omerefron.friendlines",
       "versionCode": 1,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.WAKE_LOCK",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "com.google.android.c2dm.permission.RECEIVE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,7 +54,7 @@
       "androidCollapsedTitle": "New Notification"
     },
     "extra": {
-      "apiUrl": "http://192.168.1.132:3000",
+      "apiUrl": "https://friendlines-production.up.railway.app",
       "eas": {
         "projectId": "1fe3f805-6b25-4921-aa3e-39687583f93e"
       }
@@ -64,7 +73,9 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#ffffff"
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": []
         }
       ],
       [
@@ -75,7 +86,8 @@
           ]
         }
       ],
-      "react-native-edge-to-edge"
+      "react-native-edge-to-edge",
+      "expo-audio"
     ]
   }
 }

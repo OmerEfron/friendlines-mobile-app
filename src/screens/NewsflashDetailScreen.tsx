@@ -127,7 +127,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
           />
           <View style={styles.authorInfo}>
             <Text style={styles.authorName}>{authorName}</Text>
-            <Text style={styles.timestamp}>{formatTimeAgo(timestamp)}</Text>
+            <Text style={styles.timestamp}>{formatTimeAgo(timestamp || new Date())}</Text>
           </View>
           {newsflash.sentiment && (
             <Badge
@@ -162,7 +162,7 @@ const NewsflashDetailScreen: React.FC<NewsflashDetailScreenProps> = ({ route }) 
           <View style={styles.metadataItem}>
             <Ionicons name="time" size={16} color={theme.colors.textSecondary} />
             <Text style={styles.metadataText}>
-              {new Date(timestamp).toLocaleDateString()} at {new Date(timestamp).toLocaleTimeString()}
+              {new Date(timestamp || new Date()).toLocaleDateString()} at {new Date(timestamp || new Date()).toLocaleTimeString()}
             </Text>
           </View>
           

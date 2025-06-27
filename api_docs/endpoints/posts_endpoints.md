@@ -108,8 +108,7 @@ Get posts by a specific user with pagination and audience filtering.
       "targetFriendId": null,
       "groupIds": [],
       "visibility": "friends_only",
-      "likesCount": 2,
-      "commentsCount": 1,
+
       "sharesCount": 0
     }
   ],

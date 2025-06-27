@@ -8,12 +8,17 @@ interface NotificationContextType {
   notification: Notifications.Notification | null;
   registerForNotifications: (userId: string) => Promise<boolean>;
   clearNotification: () => void;
-  handleNotificationNavigation: (data: NotificationData) => void;
+  sendTestNotification: () => Promise<void>;
+  updateBadgeCount: (count?: number) => Promise<void>;
+}
+
+interface NotificationProviderProps {
+  children: React.ReactNode;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotifications = () => {
+export const useNotifications = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   if (!context) {
     throw new Error('useNotifications must be used within a NotificationProvider');
@@ -21,40 +26,20 @@ export const useNotifications = () => {
   return context;
 };
 
-interface NotificationProviderProps {
-  children: React.ReactNode;
-}
-
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
-  const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
-  const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
   const { user } = useAppContext();
-
-  const handleNotificationReceived = (notification: Notifications.Notification) => {
-    setNotification(notification);
-    console.log('Notification received:', notification);
-  };
-
-  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
-    const data = response.notification.request.content.data as unknown as NotificationData;
-    console.log('Notification response:', response);
-
-    // Handle navigation through the context method
-    handleNotificationNavigation(data);
-  };
-
-  const handleNotificationNavigation = (data: NotificationData) => {
-    // This will be called from components that have access to navigation
-    console.log('Notification navigation triggered:', data.type);
-    
-    // Store the navigation data for components to use
-    // Components can listen to this and handle navigation appropriately
-  };
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   const registerForNotifications = async (userId: string): Promise<boolean> => {
     try {
+      // Check if registration is already in progress
+      if (notificationService.isRegistrationInProgress()) {
+        console.log('🔒 NotificationContext: Registration already in progress, skipping...');
+        return false;
+      }
+
       const token = await notificationService.registerForPushNotifications();
       if (token) {
         setExpoPushToken(token);
@@ -68,40 +53,75 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
+  const sendTestNotification = async (): Promise<void> => {
+    try {
+      await notificationService.sendTestNotification();
+    } catch (error) {
+      console.error('Failed to send test notification:', error);
+      throw error;
+    }
+  };
+
+  const updateBadgeCount = async (count?: number): Promise<void> => {
+    try {
+      await notificationService.updateBadgeCount(count);
+    } catch (error) {
+      console.error('Failed to update badge count:', error);
+      throw error;
+    }
+  };
+
   const clearNotification = () => {
     setNotification(null);
   };
 
+  // Setup basic notification listeners (without navigation)
   useEffect(() => {
-    const setupListeners = async () => {
-      const cleanup = await notificationService.setupNotificationListeners(
-        handleNotificationReceived,
-        handleNotificationResponse
-      );
-
+    const setupNotifications = async () => {
+      // Setup notification listeners without navigation
+      const cleanup = await notificationService.setupNotificationListeners();
+      cleanupRef.current = cleanup;
+      
       return cleanup;
     };
 
-    setupListeners().then(cleanup => {
-      return () => {
-        if (cleanup) cleanup();
-      };
-    });
+    setupNotifications();
+
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
   }, []);
 
-  // Auto-register for notifications when user is available
+  // Handle token updates
   useEffect(() => {
-    if (user?.id && !expoPushToken) {
-      registerForNotifications(user.id);
-    }
+    const tokenListener = Notifications.addPushTokenListener((token) => {
+      console.log('🔄 Push token updated:', token.data);
+      setExpoPushToken(token.data);
+      // Only re-register with backend if this is a genuine token update
+      // (not part of initial registration process)
+      if (user?.id && expoPushToken && expoPushToken !== token.data) {
+        console.log('🔄 Token changed, re-registering with backend...');
+        notificationService.registerTokenWithBackend(user.id, token.data);
+      }
+    });
+
+    return () => tokenListener.remove();
   }, [user?.id, expoPushToken]);
+
+  // Clear badge when app opens
+  useEffect(() => {
+    updateBadgeCount(0);
+  }, []);
 
   const value: NotificationContextType = {
     expoPushToken,
     notification,
     registerForNotifications,
     clearNotification,
-    handleNotificationNavigation,
+    sendTestNotification,
+    updateBadgeCount,
   };
 
   return (

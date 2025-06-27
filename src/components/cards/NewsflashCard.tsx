@@ -103,7 +103,7 @@ const NewsflashCard: React.FC<NewsflashCardProps> = ({
                 {newsflash.userFullName || newsflash.author?.name || 'Anonymous'}
               </Text>
               <Text style={styles.timestamp}>
-                {formatTimeAgo(newsflash.timestamp || newsflash.createdAt)}
+                {formatTimeAgo(newsflash.timestamp || newsflash.createdAt || new Date())}
               </Text>
             </View>
           </View>
