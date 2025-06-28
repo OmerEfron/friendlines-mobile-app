@@ -136,7 +136,8 @@ react-native-debug.log
 .flipper/
 flipper.log
 
-# # Firebase
-# google-services.json
-# *-service-account.jsonfir-friendlines-mobile-firebase-adminsdk-fbsvc-403af0b4bd.json
+# # # Firebase
+# # google-services.json
+# # *-service-account.jsonfir-friendlines-mobile-firebase-adminsdk-fbsvc-403af0b4bd.json
 google-services.json
+*-service-account.json

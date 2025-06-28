@@ -3,6 +3,14 @@ import * as Notifications from 'expo-notifications';
 import { useAppContext } from './AppContext';
 import notificationService, { NotificationData } from '../services/notificationService';
 
+// Helper function to validate token format
+const isValidExpoPushToken = (token: string): boolean => {
+  if (!token || typeof token !== 'string') {
+    return false;
+  }
+  return token.startsWith('ExponentPushToken[') && token.endsWith(']');
+};
+
 interface NotificationContextType {
   expoPushToken: string | null;
   notification: Notifications.Notification | null;
@@ -31,6 +39,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
   const { user } = useAppContext();
   const cleanupRef = useRef<(() => void) | null>(null);
+  const previousTokenRef = useRef<string | null>(null);
 
   const registerForNotifications = async (userId: string): Promise<boolean> => {
     try {
@@ -43,6 +52,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const token = await notificationService.registerForPushNotifications();
       if (token) {
         setExpoPushToken(token);
+        previousTokenRef.current = token;
         const success = await notificationService.registerTokenWithBackend(userId, token);
         return success;
       }
@@ -94,21 +104,52 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     };
   }, []);
 
-  // Handle token updates
+  // Handle token updates - FIXED: Better dependency management and prevents loops
   useEffect(() => {
+    // Only set up listener if we have a user
+    if (!user?.id) {
+      return;
+    }
+
     const tokenListener = Notifications.addPushTokenListener((token) => {
       console.log('🔄 Push token updated:', token.data);
-      setExpoPushToken(token.data);
-      // Only re-register with backend if this is a genuine token update
-      // (not part of initial registration process)
-      if (user?.id && expoPushToken && expoPushToken !== token.data) {
-        console.log('🔄 Token changed, re-registering with backend...');
-        notificationService.registerTokenWithBackend(user.id, token.data);
+      
+      // FIXED: Validate token format before processing
+      if (!isValidExpoPushToken(token.data)) {
+        console.warn('❌ Invalid token format: {"hasPrefix": false, "hasSuffix": false, "token": "' + token.data.substring(0, 30) + '..."}');
+        console.error('❌ Invalid token format, cannot register with backend:', token.data);
+        console.warn('⚠️ Failed to re-register token with backend');
+        return; // Skip processing invalid tokens
+      }
+      
+      // Check if this is actually a different token
+      if (token.data !== previousTokenRef.current) {
+        console.log('🔄 Token changed, updating state and re-registering with backend...');
+        setExpoPushToken(token.data);
+        previousTokenRef.current = token.data;
+        
+        // Re-register with backend for genuine token changes
+        notificationService.registerTokenWithBackend(user.id, token.data)
+          .then(success => {
+            if (success) {
+              console.log('✅ Token successfully re-registered with backend');
+            } else {
+              console.warn('⚠️ Failed to re-register token with backend');
+            }
+          })
+          .catch(error => {
+            console.error('❌ Error re-registering token:', error);
+          });
+      } else {
+        console.log('🔄 Token update received but token unchanged, skipping re-registration');
       }
     });
 
-    return () => tokenListener.remove();
-  }, [user?.id, expoPushToken]);
+    return () => {
+      console.log('🧹 Cleaning up token listener...');
+      tokenListener.remove();
+    };
+  }, [user?.id]); // Only depend on user.id, not expoPushToken
 
   // Clear badge when app opens
   useEffect(() => {

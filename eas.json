@@ -6,7 +6,13 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradle": {
+          "autolinking": true
+        }
+      }
     },
     "preview": {
       "distribution": "internal",

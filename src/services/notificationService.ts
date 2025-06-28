@@ -485,6 +485,15 @@ export class NotificationService {
     // Listen for token updates
     const tokenListener = Notifications.addPushTokenListener((token) => {
       console.log('🔄 Push token updated:', token.data);
+      
+      // FIXED: Validate token format before processing
+      if (!NotificationService.isValidExpoPushToken(token.data)) {
+        console.warn('❌ Invalid token format: {"hasPrefix": false, "hasSuffix": false, "token": "' + token.data.substring(0, 30) + '..."}');
+        console.error('❌ Invalid token format, cannot register with backend:', token.data);
+        console.warn('⚠️ Failed to re-register token with backend');
+        return; // Skip processing invalid tokens
+      }
+      
       this.expoPushToken = token.data;
       // Token updates should be handled by the context
     });

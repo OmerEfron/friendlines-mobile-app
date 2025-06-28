@@ -4,6 +4,7 @@ import type { Newsflash, CreateNewsflashData, User, LoginData, AuthUser, Friend,
 // Get API URL from app config
 // const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? 'http://localhost:3000';
 // const API_BASE_URL = 'https://friendlines-production.up.railway.app';
+// const API_BASE_URL = 'http://77.127.184.234:3000';
 const API_BASE_URL = 'http://192.168.1.132:3000';
 
 interface ApiResponse<T> {
