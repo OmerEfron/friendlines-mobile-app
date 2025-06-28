@@ -78,7 +78,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       };
 
       const user = await apiService.login(loginData);
-      await login(user);
+      await login(user, user.token);
       
       Alert.alert('Success', 'Welcome to Friendlines! Your account has been created successfully.');
     } catch (error) {

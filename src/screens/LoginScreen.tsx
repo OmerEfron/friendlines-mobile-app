@@ -84,7 +84,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       console.log('📤 Sending login data:', loginData);
       const user = await apiService.login(loginData);
       console.log('✅ Login successful, user data:', user);
-      await login(user);
+      await login(user, user.token);
       
       Alert.alert('Success', 'Welcome back to Friendlines!');
     } catch (error) {

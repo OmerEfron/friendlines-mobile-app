@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AuthUser } from '@/types';
+import { apiService } from '@/services/api';
 
 interface AppContextType {
   isDarkMode: boolean;
@@ -11,7 +12,7 @@ interface AppContextType {
   // Authentication
   user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (user: AuthUser) => Promise<void>;
+  login: (user: AuthUser, token?: string) => Promise<void>;
   logout: () => Promise<void>;
   isInitializing: boolean;
 }
@@ -21,6 +22,7 @@ const defaultAppContext: AppContextType = {
   toggleTheme: () => {},
   isLoading: false,
   setIsLoading: () => {},
+  // Authentication
   user: null,
   isAuthenticated: false,
   login: async () => {},
@@ -43,6 +45,7 @@ interface AppProviderProps {
 }
 
 const USER_STORAGE_KEY = '@friendlines_user';
+const TOKEN_STORAGE_KEY = '@friendlines_token';
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const colorScheme = useColorScheme();
@@ -58,21 +61,54 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const loadUserFromStorage = async (): Promise<void> => {
     try {
-      const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+      console.log('🔧 AppContext: Loading user and token from storage...');
+      const [storedUser, storedToken] = await Promise.all([
+        AsyncStorage.getItem(USER_STORAGE_KEY),
+        AsyncStorage.getItem(TOKEN_STORAGE_KEY)
+      ]);
+      
       if (storedUser) {
+        console.log('👤 AppContext: User loaded from storage');
         setUser(JSON.parse(storedUser));
+      }
+      
+      if (storedToken) {
+        console.log('🔑 AppContext: Token found in storage, setting in API service...');
+        apiService.setAuthToken(storedToken);
+        console.log('🔑 AppContext: Token set in API service. Current token:', apiService.getAuthToken() ? 'PRESENT' : 'MISSING');
+      } else {
+        console.log('❌ AppContext: No token found in storage');
       }
     } catch (error) {
       console.error('Failed to load user from storage:', error);
     } finally {
+      console.log('✅ AppContext: Initialization complete');
       setIsInitializing(false);
     }
   };
 
-  const login = async (userData: AuthUser): Promise<void> => {
+  const login = async (userData: AuthUser, token?: string): Promise<void> => {
     try {
-      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+      console.log('🔧 AppContext: Starting login process...');
+      console.log('🔧 AppContext: User data received:', !!userData);
+      console.log('🔧 AppContext: Token received:', !!token);
+      
+      const promises = [
+        AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
+      ];
+      
+      if (token) {
+        console.log('🔑 AppContext: Saving token to AsyncStorage...');
+        promises.push(AsyncStorage.setItem(TOKEN_STORAGE_KEY, token));
+        apiService.setAuthToken(token);
+        console.log('🔑 AppContext: Token set in API service');
+      } else {
+        console.warn('⚠️ AppContext: No token provided to login method');
+      }
+      
+      await Promise.all(promises);
       setUser(userData);
+      console.log('✅ AppContext: Login completed successfully');
     } catch (error) {
       console.error('Failed to save user to storage:', error);
       throw error;
@@ -81,7 +117,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      await Promise.all([
+        AsyncStorage.removeItem(USER_STORAGE_KEY),
+        AsyncStorage.removeItem(TOKEN_STORAGE_KEY)
+      ]);
+      apiService.setAuthToken(null);
       setUser(null);
     } catch (error) {
       console.error('Failed to remove user from storage:', error);

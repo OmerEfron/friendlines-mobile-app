@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import type { Newsflash, CreateNewsflashData, User, LoginData, AuthUser, Friend, FriendshipStatus, Group, GroupsResponse, NotificationData } from '@/types';
 
 // Get API URL from app config
-// const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? 'http://localhost:3000';
+// const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? 'http://192.168.1.132:3000';
 // const API_BASE_URL = 'https://friendlines-production.up.railway.app';
 // const API_BASE_URL = 'http://77.127.184.234:3000';
 const API_BASE_URL = 'http://192.168.1.132:3000';
@@ -34,9 +34,18 @@ class ApiError extends Error {
 
 class ApiService {
   private baseURL: string;
+  private authToken: string | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
+  }
+
+  setAuthToken(token: string | null) {
+    this.authToken = token;
+  }
+
+  getAuthToken(): string | null {
+    return this.authToken;
   }
 
   private async request<T>(
@@ -45,11 +54,18 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseURL}${endpoint}`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string> || {}),
+      };
+
+      // Add Authorization header if token is available
+      if (this.authToken) {
+        headers['Authorization'] = `Bearer ${this.authToken}`;
+      }
+
       const config: RequestInit = {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
         ...options,
       };
 
@@ -93,12 +109,32 @@ class ApiService {
   }
 
   // Authentication API methods
-  async login(loginData: LoginData): Promise<AuthUser> {
-    const response = await this.request<AuthUser>('/api/login', {
+  async login(loginData: LoginData): Promise<AuthUser & { token?: string }> {
+    const response = await this.request<AuthUser & { token?: string }>('/api/login', {
       method: 'POST',
       body: JSON.stringify(loginData),
     });
-    return response.data;
+    
+    // Extract token from root level of response (backend sends token at root, not in data)
+    const token = (response as any).token;
+    console.log('🔑 API Service: Token extraction - token found:', !!token);
+    
+    // Store the token if provided
+    if (token) {
+      this.setAuthToken(token);
+      console.log('🔑 API Service: Token stored in API service');
+    } else {
+      console.warn('⚠️ API Service: No token received from backend');
+    }
+    
+    // Return user data with token included
+    const result = {
+      ...response.data,
+      token: token
+    };
+    
+    console.log('🔑 API Service: Returning user data with token included:', !!result.token);
+    return result;
   }
 
   async checkUser(email: string): Promise<{ exists: boolean; email: string }> {
@@ -115,8 +151,8 @@ class ApiService {
     return response.data;
   }
 
-  async updateUser(id: string, userData: Partial<User>): Promise<AuthUser> {
-    const response = await this.request<AuthUser>(`/api/users/${id}`, {
+  async updateUser(userData: Partial<User>): Promise<AuthUser> {
+    const response = await this.request<AuthUser>('/api/profile', {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
@@ -124,57 +160,52 @@ class ApiService {
   }
 
   // Push Notifications API methods
-  async registerPushToken(userId: string, expoPushToken: string): Promise<{ userId: string; tokenRegistered: boolean; updatedAt: string }> {
-    const response = await this.request<{ userId: string; tokenRegistered: boolean; updatedAt: string }>(`/api/users/${userId}/push-token`, {
+  async registerPushToken(expoPushToken: string): Promise<{ userId: string; tokenRegistered: boolean; updatedAt: string }> {
+    const response = await this.request<{ userId: string; tokenRegistered: boolean; updatedAt: string }>('/api/push-token', {
       method: 'POST',
       body: JSON.stringify({ expoPushToken }),
     });
     return response.data;
   }
 
-  // Friendship API methods
-  async sendFriendRequest(targetUserId: string, currentUserId: string): Promise<{ targetUserId: string; currentUserId: string; requestSent: boolean }> {
-    const response = await this.request<{ targetUserId: string; currentUserId: string; requestSent: boolean }>(`/api/users/${targetUserId}/friend-request`, {
+  // Friendship API methods - Updated to use new social endpoints with authentication
+  async sendFriendRequest(targetUserId: string): Promise<{ targetUserId: string; currentUserId: string; requestSent: boolean }> {
+    const response = await this.request<{ targetUserId: string; currentUserId: string; requestSent: boolean }>(`/api/social/users/${targetUserId}/friend-request`, {
       method: 'POST',
-      body: JSON.stringify({ userId: currentUserId }),
     });
     return response.data;
   }
 
-  async acceptFriendRequest(requesterUserId: string, currentUserId: string): Promise<{ requesterUserId: string; currentUserId: string; areFriends: boolean; friendsCount: number }> {
-    const response = await this.request<{ requesterUserId: string; currentUserId: string; areFriends: boolean; friendsCount: number }>(`/api/users/${requesterUserId}/accept-friend`, {
+  async acceptFriendRequest(requesterUserId: string): Promise<{ requesterId: string; requesterName: string; accepterId: string; accepterName: string; acceptedAt: string }> {
+    const response = await this.request<{ requesterId: string; requesterName: string; accepterId: string; accepterName: string; acceptedAt: string }>(`/api/social/users/${requesterUserId}/accept-friend`, {
       method: 'POST',
-      body: JSON.stringify({ userId: currentUserId }),
     });
     return response.data;
   }
 
-  async rejectFriendRequest(requesterUserId: string, currentUserId: string): Promise<{ requesterUserId: string; currentUserId: string; requestRejected: boolean }> {
-    const response = await this.request<{ requesterUserId: string; currentUserId: string; requestRejected: boolean }>(`/api/users/${requesterUserId}/reject-friend`, {
+  async rejectFriendRequest(requesterUserId: string): Promise<{ requesterId: string; requesterName: string; rejecterId: string; rejecterName: string }> {
+    const response = await this.request<{ requesterId: string; requesterName: string; rejecterId: string; rejecterName: string }>(`/api/social/users/${requesterUserId}/reject-friend`, {
       method: 'POST',
-      body: JSON.stringify({ userId: currentUserId }),
     });
     return response.data;
   }
 
-  async cancelFriendRequest(targetUserId: string, currentUserId: string): Promise<{ targetUserId: string; currentUserId: string; requestCanceled: boolean }> {
-    const response = await this.request<{ targetUserId: string; currentUserId: string; requestCanceled: boolean }>(`/api/users/${targetUserId}/cancel-friend-request`, {
+  async cancelFriendRequest(targetUserId: string): Promise<{ targetId: string; targetName: string; senderId: string; senderName: string }> {
+    const response = await this.request<{ targetId: string; targetName: string; senderId: string; senderName: string }>(`/api/social/users/${targetUserId}/cancel-friend-request`, {
       method: 'POST',
-      body: JSON.stringify({ userId: currentUserId }),
     });
     return response.data;
   }
 
-  async unfriend(friendUserId: string, currentUserId: string): Promise<{ friendUserId: string; currentUserId: string; areFriends: boolean; friendsCount: number }> {
-    const response = await this.request<{ friendUserId: string; currentUserId: string; areFriends: boolean; friendsCount: number }>(`/api/users/${friendUserId}/unfriend`, {
-      method: 'POST',
-      body: JSON.stringify({ userId: currentUserId }),
+  async unfriend(friendUserId: string): Promise<{ friendId: string; friendName: string; userId: string; userName: string }> {
+    const response = await this.request<{ friendId: string; friendName: string; userId: string; userName: string }>(`/api/social/users/${friendUserId}/friendship`, {
+      method: 'DELETE',
     });
     return response.data;
   }
 
   async getFriends(userId: string, page: number = 1, limit: number = 20): Promise<{ userId: string; userName: string; friendsCount: number; friends: User[] }> {
-    const response = await this.request<User[]>(`/api/users/${userId}/friends?page=${page}&limit=${limit}`);
+    const response = await this.request<User[]>(`/api/social/users/${userId}/friends?page=${page}&limit=${limit}`);
     
     // Transform backend response to match frontend expectations
     // Backend returns friends array directly in data, but frontend expects object with friends property
@@ -188,7 +219,7 @@ class ApiService {
   }
 
   async getFriendRequests(userId: string, type: 'received' | 'sent' = 'received', page: number = 1, limit: number = 20): Promise<{ userId: string; userName: string; requestsCount: number; requestType: string; requests: User[] }> {
-    const response = await this.request<User[]>(`/api/users/${userId}/friend-requests?type=${type}&page=${page}&limit=${limit}`);
+    const response = await this.request<User[]>(`/api/social/users/${userId}/friend-requests?type=${type}&page=${page}&limit=${limit}`);
     
     // Transform backend response to match frontend expectations
     // Backend returns requests array directly in data, but frontend expects object with requests property
@@ -202,47 +233,44 @@ class ApiService {
     };
   }
 
-  async getFriendshipStatus(targetUserId: string, currentUserId: string): Promise<FriendshipStatus> {
-    const response = await this.request<FriendshipStatus>(`/api/users/${targetUserId}/friendship-status?userId=${currentUserId}`);
+  async getFriendshipStatus(targetUserId: string): Promise<FriendshipStatus> {
+    const response = await this.request<FriendshipStatus>(`/api/social/users/${targetUserId}/friendship-status`);
     return response.data;
   }
 
   // Groups API methods
-  async createGroup(userId: string, groupData: { name: string; description?: string }): Promise<Group> {
-    const response = await this.request<Group>(`/api/groups/${userId}`, {
+  async createGroup(groupData: { name: string; description?: string }): Promise<Group> {
+    const response = await this.request<Group>('/api/groups', {
       method: 'POST',
       body: JSON.stringify(groupData),
     });
     return response.data;
   }
 
-  async inviteToGroup(groupId: string, userIds: string[], currentUserId: string): Promise<{ groupId: string; invitedUsers: string[]; pendingInvites: number }> {
+  async inviteToGroup(groupId: string, userIds: string[]): Promise<{ groupId: string; invitedUsers: string[]; pendingInvites: number }> {
     const response = await this.request<{ groupId: string; invitedUsers: string[]; pendingInvites: number }>(`/api/groups/${groupId}/invite`, {
       method: 'POST',
-      body: JSON.stringify({ userIds, userId: currentUserId }),
+      body: JSON.stringify({ userIds }),
     });
     return response.data;
   }
 
-  async acceptGroupInvitation(groupId: string, userId: string): Promise<{ groupId: string; userId: string; memberCount: number }> {
+  async acceptGroupInvitation(groupId: string): Promise<{ groupId: string; userId: string; memberCount: number }> {
     const response = await this.request<{ groupId: string; userId: string; memberCount: number }>(`/api/groups/${groupId}/accept`, {
       method: 'POST',
-      body: JSON.stringify({ userId }),
     });
     return response.data;
   }
 
-  async leaveGroup(groupId: string, userId: string): Promise<{ groupId: string; userId: string; remainingMembers: number }> {
+  async leaveGroup(groupId: string): Promise<{ groupId: string; userId: string; remainingMembers: number }> {
     const response = await this.request<{ groupId: string; userId: string; remainingMembers: number }>(`/api/groups/${groupId}/leave`, {
       method: 'POST',
-      body: JSON.stringify({ userId }),
     });
     return response.data;
   }
 
-  async getGroup(groupId: string, userId?: string): Promise<Group> {
-    const queryParam = userId ? `?userId=${userId}` : '';
-    const response = await this.request<Group>(`/api/groups/${groupId}${queryParam}`);
+  async getGroup(groupId: string): Promise<Group> {
+    const response = await this.request<Group>(`/api/groups/${groupId}`);
     return response.data;
   }
 
@@ -303,7 +331,7 @@ class ApiService {
     return response.data;
   }
 
-  async createPost(data: CreateNewsflashData): Promise<Newsflash> {
+  async createPost(data: Omit<CreateNewsflashData, 'userId'>): Promise<Newsflash> {
     const response = await this.request<Newsflash>('/api/posts', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -311,7 +339,7 @@ class ApiService {
     return response.data;
   }
 
-  async generateNewsflash(data: { rawText: string; userId: string; tone?: string; length?: 'short' | 'long'; temperature?: number }): Promise<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }> {
+  async generateNewsflash(data: { rawText: string; tone?: string; length?: 'short' | 'long'; temperature?: number }): Promise<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }> {
     const response = await this.request<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }>('/api/posts/preview', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -324,7 +352,7 @@ class ApiService {
     return response.data;
   }
 
-  async updatePost(id: string, data: { rawText: string; userId: string }): Promise<Newsflash> {
+  async updatePost(id: string, data: { rawText: string }): Promise<Newsflash> {
     const response = await this.request<Newsflash>(`/api/posts/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ rawText: data.rawText }),
@@ -332,10 +360,9 @@ class ApiService {
     return response.data;
   }
 
-  async deletePost(id: string, userId: string): Promise<void> {
+  async deletePost(id: string): Promise<void> {
     await this.request<void>(`/api/posts/${id}`, {
       method: 'DELETE',
-      body: JSON.stringify({ userId }),
     });
   }
 
@@ -345,7 +372,7 @@ class ApiService {
     return this.getPosts(1, 20, userId);
   }
 
-  async createNewsflash(data: CreateNewsflashData): Promise<Newsflash> {
+  async createNewsflash(data: Omit<CreateNewsflashData, 'userId'>): Promise<Newsflash> {
     return this.createPost(data);
   }
 
@@ -353,11 +380,8 @@ class ApiService {
     return this.getPost(id);
   }
 
-  async deleteNewsflash(id: string, userId?: string): Promise<void> {
-    if (!userId) {
-      throw new ApiError('UserId is required for deleting newsflashes', 400);
-    }
-    return this.deletePost(id, userId);
+  async deleteNewsflash(id: string): Promise<void> {
+    return this.deletePost(id);
   }
 
   // AI transformation API (removed as the API handles this automatically)

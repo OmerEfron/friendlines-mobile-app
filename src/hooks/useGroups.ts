@@ -11,9 +11,9 @@ interface UseGroupsReturn {
   isLoading: boolean;
   error: Error | null;
   createGroup: (groupData: { name: string; description?: string }) => Promise<Group>;
-  inviteToGroup: (groupId: string, userIds: string[]) => Promise<void>;
-  acceptGroupInvitation: (groupId: string) => Promise<void>;
-  leaveGroup: (groupId: string) => Promise<void>;
+  inviteToGroup: (groupId: string, userIds: string[]) => Promise<{ groupId: string; invitedUsers: string[]; pendingInvites: number }>;
+  acceptGroupInvitation: (groupId: string) => Promise<{ groupId: string; userId: string; memberCount: number }>;
+  leaveGroup: (groupId: string) => Promise<{ groupId: string; userId: string; remainingMembers: number }>;
   getGroup: (groupId: string) => Promise<Group>;
   refetchGroups: () => void;
 }
@@ -37,7 +37,7 @@ export const useGroups = (userId: string): UseGroupsReturn => {
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (groupData: { name: string; description?: string }) => {
-      return await apiService.createGroup(userId, groupData);
+      return await apiService.createGroup(groupData);
     },
     onSuccess: (newGroup) => {
       // Update groups cache
@@ -59,7 +59,7 @@ export const useGroups = (userId: string): UseGroupsReturn => {
   // Invite to group mutation
   const inviteToGroupMutation = useMutation({
     mutationFn: async ({ groupId, userIds }: { groupId: string; userIds: string[] }) => {
-      return await apiService.inviteToGroup(groupId, userIds, userId);
+      return await apiService.inviteToGroup(groupId, userIds);
     },
     onSuccess: (data) => {
       // Invalidate groups cache to refresh pending invites
@@ -68,14 +68,14 @@ export const useGroups = (userId: string): UseGroupsReturn => {
     },
     onError: (error) => {
       console.error('Failed to invite to group:', error);
-      showError('Error', 'Failed to send invitations. Please try again.');
+      showError('Error', 'Failed to invite users to group. Please try again.');
     },
   });
 
   // Accept group invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      return await apiService.acceptGroupInvitation(groupId, userId);
+      return await apiService.acceptGroupInvitation(groupId);
     },
     onSuccess: (data) => {
       // Update groups cache
@@ -84,14 +84,14 @@ export const useGroups = (userId: string): UseGroupsReturn => {
     },
     onError: (error) => {
       console.error('Failed to accept group invitation:', error);
-      showError('Error', 'Failed to accept invitation. Please try again.');
+      showError('Error', 'Failed to accept group invitation. Please try again.');
     },
   });
 
   // Leave group mutation
   const leaveGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      return await apiService.leaveGroup(groupId, userId);
+      return await apiService.leaveGroup(groupId);
     },
     onSuccess: (data) => {
       // Update groups cache
@@ -107,29 +107,54 @@ export const useGroups = (userId: string): UseGroupsReturn => {
   // Get group details function
   const getGroup = useCallback(async (groupId: string): Promise<Group> => {
     try {
-      return await apiService.getGroup(groupId, userId);
+      return await apiService.getGroup(groupId);
     } catch (error) {
       console.error('Failed to get group:', error);
+      showError('Error', 'Failed to get group details. Please try again.');
       throw error;
     }
-  }, [userId]);
+  }, [showError]);
 
   // Callback functions
-  const createGroup = useCallback(async (groupData: { name: string; description?: string }): Promise<Group> => {
-    return await createGroupMutation.mutateAsync(groupData);
-  }, [createGroupMutation]);
+  const createGroup = useCallback(async (groupData: { name: string; description?: string }) => {
+    try {
+      return await apiService.createGroup(groupData);
+    } catch (error) {
+      console.error('Failed to create group:', error);
+      showError('Error', 'Failed to create group. Please try again.');
+      throw error;
+    }
+  }, [showError]);
 
   const inviteToGroup = useCallback(async (groupId: string, userIds: string[]) => {
-    await inviteToGroupMutation.mutateAsync({ groupId, userIds });
-  }, [inviteToGroupMutation]);
+    try {
+      return await apiService.inviteToGroup(groupId, userIds);
+    } catch (error) {
+      console.error('Failed to invite to group:', error);
+      showError('Error', 'Failed to invite users to group. Please try again.');
+      throw error;
+    }
+  }, [showError]);
 
   const acceptGroupInvitation = useCallback(async (groupId: string) => {
-    await acceptInvitationMutation.mutateAsync(groupId);
-  }, [acceptInvitationMutation]);
+    try {
+      return await apiService.acceptGroupInvitation(groupId);
+    } catch (error) {
+      console.error('Failed to accept group invitation:', error);
+      showError('Error', 'Failed to accept group invitation. Please try again.');
+      throw error;
+    }
+  }, [showError]);
 
   const leaveGroup = useCallback(async (groupId: string) => {
-    await leaveGroupMutation.mutateAsync(groupId);
-  }, [leaveGroupMutation]);
+    try {
+      return await apiService.leaveGroup(groupId);
+    } catch (error) {
+      console.error('Failed to leave group:', error);
+      showError('Error', 'Failed to leave group. Please try again.');
+      throw error;
+    }
+  }, [showError]);
 
   return {
     ownedGroups: groupsData?.owned || [],

@@ -101,20 +101,19 @@ const MenuScreen: React.FC = () => {
         [{ text: 'OK' }]
       );
 
-      // Create a test newsflash from the friend
+      // Create a test newsflash
       const testNewsflash = await apiService.createPost({
-        originalText: `Hey ${user.fullName}! This is a test notification from ${randomFriend.fullName}. Just checking if the notification system is working properly! 🎉`,
-        rawText: `Hey ${user.fullName}! This is a test notification from ${randomFriend.fullName}. Just checking if the notification system is working properly! 🎉`,
+        originalText: `Hey ${user.fullName}! This is a test notification. Just checking if the notification system is working properly! 🎉`,
+        rawText: `Hey ${user.fullName}! This is a test notification. Just checking if the notification system is working properly! 🎉`,
         recipients: [user.id], // Send to current user
         groups: [], // No groups for this test
-        userId: randomFriend.id,
         tone: 'friendly',
         length: 'short'
       });
 
       Alert.alert(
         'Success!',
-        `Test post created from ${randomFriend.fullName}. You should receive a notification shortly if the system is working correctly.`,
+        'Test post created. You should receive a notification shortly if the system is working correctly.',
         [{ text: 'OK' }]
       );
 

@@ -60,23 +60,25 @@ export const useFriends = (userId: string): UseFriendsReturn => {
   // Send friend request mutation
   const sendRequestMutation = useMutation({
     mutationFn: async (targetUserId: string) => {
-      return await apiService.sendFriendRequest(targetUserId, userId);
+      return await apiService.sendFriendRequest(targetUserId);
     },
     onSuccess: (data) => {
       // Update sent requests cache
       queryClient.invalidateQueries({ queryKey: ['friendRequests', userId, 'sent'] });
       showSuccess('Friend Request Sent', 'Your friend request has been sent successfully.');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to send friend request:', error);
-      showError('Error', 'Failed to send friend request. Please try again.');
+      // Try to extract the specific error message from the API response
+      const errorMessage = error?.message || 'Failed to send friend request. Please try again.';
+      showError('Error', errorMessage);
     },
   });
 
   // Accept friend request mutation
   const acceptRequestMutation = useMutation({
     mutationFn: async (requesterUserId: string) => {
-      return await apiService.acceptFriendRequest(requesterUserId, userId);
+      return await apiService.acceptFriendRequest(requesterUserId);
     },
     onSuccess: (data) => {
       // Update all friend-related caches
@@ -84,69 +86,73 @@ export const useFriends = (userId: string): UseFriendsReturn => {
       queryClient.invalidateQueries({ queryKey: ['friendRequests', userId, 'received'] });
       showSuccess('Friend Request Accepted', 'You are now friends!');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to accept friend request:', error);
-      showError('Error', 'Failed to accept friend request. Please try again.');
+      const errorMessage = error?.message || 'Failed to accept friend request. Please try again.';
+      showError('Error', errorMessage);
     },
   });
 
   // Reject friend request mutation
   const rejectRequestMutation = useMutation({
     mutationFn: async (requesterUserId: string) => {
-      return await apiService.rejectFriendRequest(requesterUserId, userId);
+      return await apiService.rejectFriendRequest(requesterUserId);
     },
     onSuccess: (data) => {
       // Update received requests cache
       queryClient.invalidateQueries({ queryKey: ['friendRequests', userId, 'received'] });
       showSuccess('Friend Request Rejected', 'Friend request has been rejected.');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to reject friend request:', error);
-      showError('Error', 'Failed to reject friend request. Please try again.');
+      const errorMessage = error?.message || 'Failed to reject friend request. Please try again.';
+      showError('Error', errorMessage);
     },
   });
 
   // Cancel friend request mutation
   const cancelRequestMutation = useMutation({
     mutationFn: async (targetUserId: string) => {
-      return await apiService.cancelFriendRequest(targetUserId, userId);
+      return await apiService.cancelFriendRequest(targetUserId);
     },
     onSuccess: (data) => {
       // Update sent requests cache
       queryClient.invalidateQueries({ queryKey: ['friendRequests', userId, 'sent'] });
       showSuccess('Request Canceled', 'Friend request has been canceled.');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to cancel friend request:', error);
-      showError('Error', 'Failed to cancel friend request. Please try again.');
+      const errorMessage = error?.message || 'Failed to cancel friend request. Please try again.';
+      showError('Error', errorMessage);
     },
   });
 
   // Unfriend mutation
   const unfriendMutation = useMutation({
     mutationFn: async (friendUserId: string) => {
-      return await apiService.unfriend(friendUserId, userId);
+      return await apiService.unfriend(friendUserId);
     },
     onSuccess: (data) => {
       // Update friends cache
       queryClient.invalidateQueries({ queryKey: ['friends', userId] });
       showSuccess('Unfriended', 'Friend has been removed from your friends list.');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to unfriend:', error);
-      showError('Error', 'Failed to unfriend. Please try again.');
+      const errorMessage = error?.message || 'Failed to unfriend. Please try again.';
+      showError('Error', errorMessage);
     },
   });
 
   // Get friendship status function
   const getFriendshipStatus = useCallback(async (targetUserId: string): Promise<FriendshipStatus> => {
     try {
-      return await apiService.getFriendshipStatus(targetUserId, userId);
+      return await apiService.getFriendshipStatus(targetUserId);
     } catch (error) {
       console.error('Failed to get friendship status:', error);
       throw error;
     }
-  }, [userId]);
+  }, []);
 
   // Callback functions
   const sendFriendRequest = useCallback(async (targetUserId: string) => {

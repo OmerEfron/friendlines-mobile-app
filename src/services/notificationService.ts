@@ -133,6 +133,14 @@ export class NotificationService {
 
   async requestNotificationPermissions(): Promise<boolean> {
     try {
+      // Check current permission status first
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      
+      if (existingStatus === 'granted') {
+        console.log('📋 Notification permissions already granted');
+        return true;
+      }
+
       // Show explanation before requesting
       const shouldRequest = await new Promise<boolean>((resolve) => {
         Alert.alert(
@@ -196,31 +204,10 @@ export class NotificationService {
       // Set up Android notification channels BEFORE requesting permissions
       await this.setupAndroidChannels();
 
-      // Check current permission status
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+      // Request permissions with user-friendly flow
+      const permissionGranted = await this.requestNotificationPermissions();
       
-      console.log(`📋 Current permission status: ${existingStatus}`);
-      
-      // Request permissions if not granted
-      if (existingStatus !== 'granted') {
-        console.log('🔐 Requesting notification permissions...');
-        const { status } = await Notifications.requestPermissionsAsync({
-          ios: {
-            allowAlert: true,
-            allowBadge: true,
-            allowSound: true,
-            allowDisplayInCarPlay: true,
-            allowCriticalAlerts: false,
-            provideAppNotificationSettings: true,
-            allowProvisional: false,
-          },
-        });
-        finalStatus = status;
-      }
-      
-      // Handle permission denial
-      if (finalStatus !== 'granted') {
+      if (!permissionGranted) {
         console.error('❌ Notification permission not granted');
         this.showPermissionDeniedAlert();
         return null;
@@ -332,26 +319,52 @@ export class NotificationService {
       return false;
     }
 
+    // Check if API service has auth token before starting
+    const hasAuthToken = !!apiService.getAuthToken();
+    console.log('🔑 NotificationService: API service auth token available before registration:', hasAuthToken);
+    
+    if (!hasAuthToken) {
+      console.error('❌ NotificationService: No auth token available in API service, cannot register push token');
+      return false;
+    }
+
     const maxRetries = 3;
     let attempt = 0;
     
     while (attempt < maxRetries) {
       try {
         console.log(`🔗 Registering token with backend for user: ${userId} (attempt ${attempt + 1}/${maxRetries})`);
-        const result = await apiService.registerPushToken(userId, token);
+        const result = await apiService.registerPushToken(token);
         console.log(`✅ Token registration result:`, result);
         return result.tokenRegistered;
-      } catch (error) {
+      } catch (error: any) {
         attempt++;
+        
+        // Check if this is an authentication error (401)
+        const isAuthError = error?.statusCode === 401 || error?.message?.includes('401');
+        
+        if (isAuthError) {
+          console.error('❌ Authentication error during token registration - auth token not available or invalid');
+          // Don't retry authentication errors immediately - likely means auth token isn't restored yet
+          if (attempt === 1) {
+            console.log('⏳ Waiting for auth token to be restored before retrying...');
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds for auth restoration
+          }
+        }
+        
         console.warn(`⚠️ Registration attempt ${attempt} failed:`, error);
         
         if (attempt < maxRetries) {
-          // Wait with exponential backoff before retrying
-          const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+          // For auth errors, wait longer; for other errors, use exponential backoff
+          const delay = isAuthError ? 2000 : (1000 * Math.pow(2, attempt - 1)); // 2s for auth, 1s/2s/4s for others
           console.log(`⏳ Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
-          console.error('❌ Failed to register push token with backend after all retries:', error);
+          if (isAuthError) {
+            console.error('❌ Failed to register push token: Authentication token not available. Push notifications will not work until the user logs in again.');
+          } else {
+            console.error('❌ Failed to register push token with backend after all retries:', error);
+          }
           return false;
         }
       }

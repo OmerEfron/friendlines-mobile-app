@@ -37,7 +37,7 @@ export const useNotifications = (): NotificationContextType => {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
-  const { user } = useAppContext();
+  const { user, isInitializing } = useAppContext();
   const cleanupRef = useRef<(() => void) | null>(null);
   const previousTokenRef = useRef<string | null>(null);
 
@@ -104,22 +104,26 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     };
   }, []);
 
-  // Handle token updates - FIXED: Better dependency management and prevents loops
+  // Handle token updates - FIXED: Better dependency management and prevents race conditions
   useEffect(() => {
-    // Only set up listener if we have a user
-    if (!user?.id) {
+    // Only set up listener if we have a user AND app initialization is complete
+    if (!user?.id || isInitializing) {
+      if (user?.id && isInitializing) {
+        console.log('🔧 NotificationContext: Waiting for app initialization to complete before setting up token listener...');
+      }
       return;
     }
+
+    console.log('🔧 NotificationContext: Setting up push token listener for user:', user.id);
 
     const tokenListener = Notifications.addPushTokenListener((token) => {
       console.log('🔄 Push token updated:', token.data);
       
       // FIXED: Validate token format before processing
       if (!isValidExpoPushToken(token.data)) {
-        console.warn('❌ Invalid token format: {"hasPrefix": false, "hasSuffix": false, "token": "' + token.data.substring(0, 30) + '..."}');
-        console.error('❌ Invalid token format, cannot register with backend:', token.data);
-        console.warn('⚠️ Failed to re-register token with backend');
-        return; // Skip processing invalid tokens
+        console.warn('❌ Invalid token format received, skipping registration');
+        console.warn('❌ Token validation failed: {"hasPrefix": ' + token.data.startsWith('ExponentPushToken[') + ', "hasSuffix": ' + token.data.endsWith(']') + ', "token": "' + token.data.substring(0, 30) + '..."}');
+        return; // Skip processing invalid tokens entirely
       }
       
       // Check if this is actually a different token
@@ -129,6 +133,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         previousTokenRef.current = token.data;
         
         // Re-register with backend for genuine token changes
+        
         notificationService.registerTokenWithBackend(user.id, token.data)
           .then(success => {
             if (success) {
@@ -149,7 +154,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       console.log('🧹 Cleaning up token listener...');
       tokenListener.remove();
     };
-  }, [user?.id]); // Only depend on user.id, not expoPushToken
+  }, [user?.id, isInitializing]); // Add isInitializing to dependencies
 
   // Clear badge when app opens
   useEffect(() => {
