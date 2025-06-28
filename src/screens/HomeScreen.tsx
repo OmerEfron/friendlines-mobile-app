@@ -46,21 +46,10 @@ const HomeScreen: React.FC = () => {
   const filteredNewsflashes = useMemo(() => {
     if (!user) return [];
     
-    return newsflashes.filter(newsflash => {
-      // Show newsflashes from friends
-      if (user.friends?.includes(newsflash.userId || '')) return true;
-      
-      // Show newsflashes where user is a recipient
-      if (newsflash.recipients?.includes(user.id)) return true;
-      
-      // Show newsflashes from groups the user is in
-      if (newsflash.groupIds && newsflash.groupIds.length > 0) {
-        // This would need to be enhanced with actual group membership check
-        return true;
-      }
-      
-      return false;
-    });
+    // The backend getPosts already filters posts based on friendship and audience
+    // when we pass currentUserId, so we don't need to filter again here
+    // Just return all newsflashes that the backend provides
+    return newsflashes;
   }, [newsflashes, user]);
 
   // Get trending topics from newsflashes

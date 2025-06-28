@@ -174,13 +174,32 @@ class ApiService {
   }
 
   async getFriends(userId: string, page: number = 1, limit: number = 20): Promise<{ userId: string; userName: string; friendsCount: number; friends: User[] }> {
-    const response = await this.request<{ userId: string; userName: string; friendsCount: number; friends: User[] }>(`/api/users/${userId}/friends?page=${page}&limit=${limit}`);
-    return response.data;
+    const response = await this.request<User[]>(`/api/users/${userId}/friends?page=${page}&limit=${limit}`);
+    
+    // Transform backend response to match frontend expectations
+    // Backend returns friends array directly in data, but frontend expects object with friends property
+    const user = await this.getUser(userId);
+    return {
+      userId: userId,
+      userName: user.fullName || 'Unknown User',
+      friendsCount: response.data.length,
+      friends: response.data
+    };
   }
 
   async getFriendRequests(userId: string, type: 'received' | 'sent' = 'received', page: number = 1, limit: number = 20): Promise<{ userId: string; userName: string; requestsCount: number; requestType: string; requests: User[] }> {
-    const response = await this.request<{ userId: string; userName: string; requestsCount: number; requestType: string; requests: User[] }>(`/api/users/${userId}/friend-requests?type=${type}&page=${page}&limit=${limit}`);
-    return response.data;
+    const response = await this.request<User[]>(`/api/users/${userId}/friend-requests?type=${type}&page=${page}&limit=${limit}`);
+    
+    // Transform backend response to match frontend expectations
+    // Backend returns requests array directly in data, but frontend expects object with requests property
+    const user = await this.getUser(userId);
+    return {
+      userId: userId,
+      userName: user.fullName || 'Unknown User',
+      requestsCount: response.data.length,
+      requestType: type,
+      requests: response.data
+    };
   }
 
   async getFriendshipStatus(targetUserId: string, currentUserId: string): Promise<FriendshipStatus> {
@@ -228,8 +247,35 @@ class ApiService {
   }
 
   async getUserGroups(userId: string): Promise<GroupsResponse> {
-    const response = await this.request<GroupsResponse>(`/api/groups/user/${userId}`);
-    return response.data;
+    const response = await this.request<Group[]>(`/api/groups/user/${userId}`);
+    
+    // Transform backend response to match frontend expectations
+    // Backend returns flat array of groups, but frontend expects categorized response
+    const groups = response.data;
+    
+    // Categorize groups based on the user's role
+    const owned: Group[] = [];
+    const member: Group[] = [];
+    const invited: Group[] = [];
+    
+    groups.forEach(group => {
+      if (group.ownerId === userId) {
+        owned.push(group);
+      } else if ((group as any).role === 'member') {
+        member.push(group);
+      } else if ((group as any).role === 'invited') {
+        invited.push(group);
+      } else {
+        // Default to member if role is not specified
+        member.push(group);
+      }
+    });
+    
+    return {
+      owned,
+      member,
+      invited
+    };
   }
 
   // Posts API methods (matching the API documentation)
@@ -266,7 +312,7 @@ class ApiService {
   }
 
   async generateNewsflash(data: { rawText: string; userId: string; tone?: string; length?: 'short' | 'long'; temperature?: number }): Promise<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }> {
-    const response = await this.request<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }>('/api/posts/generate-newsflash', {
+    const response = await this.request<{ rawText: string; generatedText: string; method: string; user: { id: string; fullName: string }; options: any }>('/api/posts/preview', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -274,21 +320,22 @@ class ApiService {
   }
 
   async getPost(id: string): Promise<Newsflash> {
-    const response = await this.request<Newsflash>(`/api/posts/single/${id}`);
+    const response = await this.request<Newsflash>(`/api/posts/${id}/details`);
     return response.data;
   }
 
-  async updatePost(id: string, data: { rawText: string }): Promise<Newsflash> {
+  async updatePost(id: string, data: { rawText: string; userId: string }): Promise<Newsflash> {
     const response = await this.request<Newsflash>(`/api/posts/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ rawText: data.rawText }),
     });
     return response.data;
   }
 
-  async deletePost(id: string): Promise<void> {
+  async deletePost(id: string, userId: string): Promise<void> {
     await this.request<void>(`/api/posts/${id}`, {
       method: 'DELETE',
+      body: JSON.stringify({ userId }),
     });
   }
 
@@ -306,8 +353,11 @@ class ApiService {
     return this.getPost(id);
   }
 
-  async deleteNewsflash(id: string): Promise<void> {
-    return this.deletePost(id);
+  async deleteNewsflash(id: string, userId?: string): Promise<void> {
+    if (!userId) {
+      throw new ApiError('UserId is required for deleting newsflashes', 400);
+    }
+    return this.deletePost(id, userId);
   }
 
   // AI transformation API (removed as the API handles this automatically)
